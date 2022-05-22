@@ -9,16 +9,20 @@ from skeleton.params import get_h0, get_density_weights
 from skeleton.utils import get_local_points
 
 
-def skeletonize(points, n_centers=500, max_points=5000, max_iterations=50, try_make_skeleton=True):
+def skeletonize(points, n_centers=1000, max_points=10000, max_iterations=50, try_make_skeleton=True):
+    assert len(points) > n_centers
+
     if len(points) > max_points:
         random_indices = random.sample(range(0, len(points)), max_points)
         points = points[random_indices, :]
 
     h0 = get_h0(points) / 2
     h = h0
+
     print("h0:", h0)
 
     random.seed(time.time().real)
+
     random_centers = random.sample(range(0, len(points)), n_centers)
     centers = points[random_centers, :]
 

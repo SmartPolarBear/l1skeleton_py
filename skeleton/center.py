@@ -3,7 +3,7 @@ from scipy.spatial import distance
 import time
 
 from skeleton.params import get_term1, get_sigma, get_term2
-from skeleton.utils import unit_vector, get_local_points
+from skeleton.utils import unit_vector
 
 
 class Center:

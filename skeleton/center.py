@@ -743,6 +743,7 @@ class Centers:
         vector_u = unit_vector(vector)
 
         connection = False
+        neighbour = None
         for neighbour in myCenter.closest_neighbours:
 
             neighbour = self.myCenters[neighbour]

@@ -73,7 +73,7 @@ def skeletonize(points, n_centers=1000, max_points=10000, max_iterations=50, try
             break
 
         if non_branch_points == 0:
-            print("Found WHOLE skeleton!")
+            print("Found whole skeleton!")
             break
 
         last_non_branch = non_branch_points

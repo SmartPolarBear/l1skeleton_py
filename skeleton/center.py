@@ -214,14 +214,15 @@ class Centers:
 
             branch = self.skeleton[key]
 
-            head = self.myCenters[branch['branch'][0]];
+            head = self.myCenters[branch['branch'][0]]
             tail = self.myCenters[branch['branch'][-1]]
 
-            # This is either a None value (for not having found a bridge point / connected branch) or this is an integer index
+            # This is either a None value (for not having found a bridge point / connected branch)
+            # or this is an integer index
             head_connection = branch['head_bridge_connection'][1]
             tail_connection = branch['tail_bridge_connection'][1]
 
-            if head_connection != None:
+            if head_connection is not None:
 
                 head_connection = self.myCenters[head_connection]
 
@@ -263,7 +264,7 @@ class Centers:
             # 1) Go through the branch list and set each center t branch_point and set the head_tail value appropriately
             # 2) Set the connections
             index = 1
-            for center in branch['branch'][1:-1]:
+            for center in branch['branch'][1:-1]:  # [1:-1] to remove head and tail
                 center = self.myCenters[center]
 
                 center.set_as_branch_point(key)
@@ -286,7 +287,8 @@ class Centers:
 
             for index in branch['branch']:
                 if branch['branch'].count(index) > 1:
-                    print("ERROR: This branch has multiple counts of 1 index...", branch['branch'])
+                    del branch['branch'][branch['branch'].index(index)]
+                    # print("ERROR: branch {} has multiple counts of index {}...".format(branch['branch'], index))
                     break
 
     def contract(self, points, local_indices, h, density_weights, mu=0.35):

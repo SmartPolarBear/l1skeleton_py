@@ -52,8 +52,6 @@ class Center:
             self.sigma = sigma
 
     def set_closest_neighbours(self, closest_neighbours):
-        """
-        """
         self.closest_neighbours = closest_neighbours
 
     def set_label(self, label):
@@ -98,7 +96,8 @@ class Centers:
             center.set_closest_neighbours(closest[1:in_neighboorhood])
 
     def __init__(self, centers, h0, maxPoints):
-        self.centers = centers + 10 ** -20  # Making sure centers are never the same as the actual points which can lead to bad things
+        # Making sure centers are never the same as the actual points which can lead to bad things
+        self.centers = centers + 10 ** -20
         self.myCenters = []
         self.my_non_branch_centers = []
         index = 0
@@ -153,10 +152,10 @@ class Centers:
             head = self.skeleton[key]['head_bridge_connection']
             tail = self.skeleton[key]['tail_bridge_connection']
 
-            if head[0] and head[1] != None:
+            if head[0] and head[1] is not None:
                 if not head[1] in bridge_points:
                     bridge_points.append(head[1])
-            if tail[0] and tail[1] != None:
+            if tail[0] and tail[1] is not None:
                 if not tail[1] in bridge_points:
                     bridge_points.append(tail[1])
 
@@ -242,7 +241,7 @@ class Centers:
                 head.set_as_branch_point(key)
                 head.head_tail = True
 
-            if tail_connection != None:
+            if tail_connection is not None:
 
                 tail_connection = self.myCenters[tail_connection]
 
@@ -307,15 +306,15 @@ class Centers:
         """
         self.h = h
 
-        t1_total = time.perf_counter();
-        term1_t = 0;
-        term2_t = 0;
+        # t1_total = time.perf_counter()
+        term1_t = 0
+        term2_t = 0
         sigma_t = 0
-        t_pre = 0;
+        t_pre = 0
         t_post = 0
 
-        error_center = 0;
-        N = 0;
+        error_center = 0
+        N = 0
         for myCenter in self.myCenters:
 
             t1 = time.perf_counter()
@@ -341,7 +340,7 @@ class Centers:
 
                 term2, delta_t2 = get_term2(myCenter.center, centers_in, h)
 
-                term1_t += delta_t1;
+                term1_t += delta_t1
                 term2_t += delta_t2
 
                 if term1.any() and term2.any():
@@ -370,8 +369,8 @@ class Centers:
                     t2 = time.perf_counter()
 
                     t_post += t2 - t1
-        t2_total = time.perf_counter();
-        total_time = round(t2_total - t1_total, 4);
+        # t2_total = time.perf_counter()
+        # total_time = round(t2_total - t1_total, 4);
 
         # if N == 0: N +=1
 
@@ -561,8 +560,8 @@ class Centers:
                 bridge_head = points[0]
                 bridge_tail = points[1]
 
-                # If not None check how man y instances we ahve of this bridge point
-                if bridge_head != None:
+                # If not None check how man y instances we have of this bridge point
+                if bridge_head is not None:
                     # 2)
                     count_head = len(np.argwhere(bridge_points == bridge_head))
                     if count_head > 1:
@@ -580,7 +579,7 @@ class Centers:
                         success = True
                         break
 
-                if bridge_tail != None:
+                if bridge_tail is not None:
                     count_tail = len(np.argwhere(bridge_points == bridge_tail))
                     if count_tail > 1:
                         indices = np.where(bridge_points == bridge_tail)
@@ -671,7 +670,9 @@ class Centers:
             if center.label != 'bridge_point':
                 continue
 
-            # Our head is connected to a bridge point of another branch. Thus our head has NO bridge point and we need to change this in the branch from which this is the bridge_point
+            # Our head is connected to a bridge point of another branch.
+            # Thus our head has NO bridge point
+            # and we need to change this in the branch from which this is the bridge_point
             if index == branch_list[0]:
                 head_bridge_connection[0] = False
                 head_bridge_connection[1] = center.bridge_connections
@@ -738,7 +739,7 @@ class Centers:
         ACTIONS:
             1) Check if neighbour is too far
             2) Check if too close
-            3) check if in he right direcion
+            3) check if in the right direcion
             4) if checks 1,2,3 we check if we meet the requirement. Then we stop
         """
         myCenter = self.myCenters[center_index]
@@ -999,8 +1000,8 @@ class Centers:
                     for neighbour in center.closest_neighbours:
                         neighbour = self.myCenters[neighbour]
 
-                        # Check till we leave the neighboorhood
-                        if np.sum((neighbour.center - center.center) ** 2) > (center.h) ** 2:
+                        # Check till we leave the neighbourhood
+                        if np.sum((neighbour.center - center.center) ** 2) > center.h ** 2:
                             break
 
                         if neighbour.label == 'branch_point':

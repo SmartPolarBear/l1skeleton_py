@@ -1052,4 +1052,4 @@ class Centers:
 
         if remove_centers:
             self.remove_centers(remove_centers)
-            print("removed", len(remove_centers), 'points!')
+            print("removed", len(remove_centers), 'center points!')

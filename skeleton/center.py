@@ -133,6 +133,7 @@ class Centers:
             center = self.myCenters[index]
             center.set_label("removed")
             self.centers[center.index] = [9999, 9999, 9999]
+
         self.set_my_non_branch_centers()
         self.Nremoved += len(indices)
 
@@ -306,18 +307,11 @@ class Centers:
         """
         self.h = h
 
-        # t1_total = time.perf_counter()
-        term1_t = 0
-        term2_t = 0
-        sigma_t = 0
-        t_pre = 0
-        t_post = 0
-
         error_center = 0
         N = 0
+
         for myCenter in self.myCenters:
 
-            t1 = time.perf_counter()
             # Get the closest 50 centers to do calculations with
             centers_indices = myCenter.closest_neighbours
             # Get the density weight of these centers
@@ -326,8 +320,6 @@ class Centers:
             my_local_indices = local_indices[myCenter.index]
             local_points = points[my_local_indices]
 
-            t2 = time.perf_counter()
-            t_pre += t2 - t1
             # Check if we have enough points and centers
             shape = local_points.shape
             if len(shape) == 1:
@@ -340,13 +332,9 @@ class Centers:
 
                 term2, delta_t2 = get_term2(myCenter.center, centers_in, h)
 
-                term1_t += delta_t1
-                term2_t += delta_t2
-
                 if term1.any() and term2.any():
                     sigma, vecs, delta_ts = get_sigma(myCenter.center, centers_in, h)
                     # sigma = np.clip(sigma, 0 ,1.)
-                    sigma_t += delta_ts
 
                     # DIFFERS FROM PAPER
                     # mu = mu_length/sigma_length * (sigma - min_sigma)
@@ -355,10 +343,9 @@ class Centers:
 
                     # mu_average +=mu
 
-                    t1 = time.perf_counter()
                     new_center = term1 + mu * sigma * term2
 
-                    error_center += np.linalg.norm(myCenter.center - new_center);
+                    error_center += np.linalg.norm(myCenter.center - new_center)
                     N += 1
 
                     # Update this center object
@@ -366,21 +353,6 @@ class Centers:
                     myCenter.set_eigen_vectors(vecs)
                     myCenter.set_sigma(sigma)
                     myCenter.set_h(h)
-                    t2 = time.perf_counter()
-
-                    t_post += t2 - t1
-        # t2_total = time.perf_counter()
-        # total_time = round(t2_total - t1_total, 4);
-
-        # if N == 0: N +=1
-
-        # CURSOR_UP_ONE = '\x1b[1A'; ERASE_LINE = '\x1b[2K'
-        # first_line = CURSOR_UP_ONE + ERASE_LINE + "\tTotal Contract time = {} secs, Average movement of centers={}          \n".format(total_time, round(error_center/N,6))
-        # second_line = "\tTime per step: prep={} secs, term1={} secs, term2={} secs, sigma={} secs, post = {} secs           \r".format(round(t_pre,4),round(term1_t,4), round(term2_t,4), round(sigma_t,4), round(t_post,4))
-
-        # sys.stdout.write(first_line)
-        # sys.stdout.write(second_line)
-        # sys.stdout.flush()
 
         return error_center / N
 
@@ -466,7 +438,7 @@ class Centers:
         for center in self.myCenters:
             if center.label != 'bridge_point':
                 continue
-            # Check the local neighboorhood for any other bridge_points
+            # Check the local neighbourhood for any other bridge_points
             for neighbour in center.closest_neighbours:
 
                 neighbour = self.myCenters[neighbour]
@@ -621,7 +593,7 @@ class Centers:
             # 3) Update old bridge_point
             if success:
                 old_bridge_point = branch['head_bridge_connection'][1]
-                if old_bridge_point != None:
+                if old_bridge_point is not None:
                     old_bridge_point = self.myCenters[old_bridge_point]
                     old_bridge_point.set_non_branch()
 
@@ -638,7 +610,7 @@ class Centers:
             if success:
                 # Update old bridge_point
                 old_bridge_point = branch['tail_bridge_connection'][1]
-                if old_bridge_point != None:
+                if old_bridge_point is not None:
                     old_bridge_point = self.myCenters[old_bridge_point]
                     old_bridge_point.set_non_branch()
 

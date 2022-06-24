@@ -889,33 +889,29 @@ class Centers:
         3) Merges skeletons if possible
         """
 
-        # self.try_extend_skeleton()
+        self.try_extend_skeleton()
 
         non_branch_points = np.array(self.get_non_branch_points())
         if non_branch_points.any():
-            # non_branch_points = non_branch_points)
             sigma_candidates = self.sigmas[non_branch_points]
 
             seed_points_to_check = non_branch_points[np.where(sigma_candidates > 0.9)]
 
-            # bridge_points = self.get_bridge_points()
+            bridge_points = self.get_bridge_points()
 
-            # seed_points_to_check = list(bridge_points) + list(seed_points_to_check)
-            # print("top 5 sigmas:", sorted(sigma_candidates, reverse =True)[:5])
+            seed_points_to_check = list(bridge_points) + list(seed_points_to_check)
+            print("top 5 sigmas:", sorted(sigma_candidates, reverse=True)[:5])
             for seed_point_index in seed_points_to_check:
 
                 myCenter = self.myCenters[seed_point_index]
 
-                old_skeleton = len(self.skeleton)
-                succes = self.try_to_make_new_branch(myCenter)
-                if succes:
+                # old_skeleton = len(self.skeleton)
+                if self.try_to_make_new_branch(myCenter):
                     new_branch_number = len(self.skeleton)
                     new_branch = self.skeleton[new_branch_number]
                     self.set_bridge_points(new_branch_number, new_branch)
                     self.merge_bridge_points()
                     self.clean_points_around_branch(new_branch)
-
-                    # input("adding new branch...")
 
             self.update_labels_connections()
             self.clean_points()

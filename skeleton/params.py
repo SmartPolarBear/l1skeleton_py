@@ -79,7 +79,6 @@ def get_density_weights(points, h0, for_center=False, center=None):
 
 def get_term1(center: np.ndarray, points: np.ndarray, h: float, density_weights: np.ndarray):
     """
-
     :param center: 1x3 center we of interest, np.ndarray
     :param points: Nx3 array of all the points, np.ndarray
     :param h: size of local neighborhood, float
@@ -178,7 +177,7 @@ def get_sigma(center, centers, h):
         vectors_norm = np.sqrt(np.einsum('ij,ij->i', vectors, vectors))
         vectors = vectors / vectors_norm
 
-    # Argsort always works from low --> to high so taking the negative values will give us high --> low indices
+    # argsort always works from low --> to high so taking the negative values will give us high --> low indices
     sorted_indices = np.argsort(-values)
 
     values_sorted = values[sorted_indices]
@@ -200,9 +199,9 @@ def get_h0(points):
 
     z_max = points[:, 2].max()
     z_min = points[:, 2].min()
-    print("BB values: \n\tx:", x_max - x_min, "\n\ty:", y_max - y_min, "\n\tz:", z_max - z_min)
+    print("Bounding Box: \n\tx:", x_max - x_min, "\n\ty:", y_max - y_min, "\n\tz:", z_max - z_min)
 
-    diagonal = ((x_max - x_min) ** 2 + (y_max - y_min) ** 2 + (z_max - z_min) ** 2) ** .5
+    diagonal = np.sqrt(np.square(x_max - x_min) + np.square(y_max - y_min) + np.square(z_max - z_min))
 
     n_points = len(points)
 

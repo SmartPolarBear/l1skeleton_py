@@ -21,7 +21,7 @@ def skeletonize(points, n_centers=1000, max_points=10000, max_iterations=50, try
 
     print("h0:", h0)
 
-    random.seed(time.time().real)
+    random.seed(int(time.time()))
 
     random_centers = random.sample(range(0, len(points)), n_centers)
     centers = points[random_centers, :]

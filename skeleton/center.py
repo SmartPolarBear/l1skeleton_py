@@ -919,9 +919,9 @@ class Centers:
     def clean_points(self):
         """
         Cleans points which
-        1) have no poins in their neighboorhood
+        1) have no points in their neighborhood
         2) Are bridge_points, with no non_branch_points around. Makes them part of the branch
-        3) More then half your neighbours are branch_points
+        3) More than half your neighbours are branch_points
         AFTER the first 2 branches are formed
         """
 
@@ -931,11 +931,8 @@ class Centers:
                 if center.label == 'removed' or center.label == 'branch_point':
                     continue
 
-                if center.closest_neighbours.any():
-                    neighbour = center.closest_neighbours[0]
-                    neighbour = self.myCenters[neighbour]
                 # 1) If no neighbours:
-                else:
+                if not center.closest_neighbours.any():
                     # If a bridge point we make it a branch
                     if center.label == 'bridge_point':
                         self.bridge_2_branch(center.index, center.branch_number)
@@ -950,7 +947,7 @@ class Centers:
                     for neighbour in center.closest_neighbours:
                         neighbour = self.myCenters[neighbour]
 
-                        # Check till we leave the neighboorhood
+                        # Check till we leave the neighborhood
                         if sum((neighbour.center - center.center) ** 2) > (2 * center.h) ** 2:
                             break
 

@@ -4,11 +4,10 @@ import time
 EXTREME_SMALL = 10 ** -323
 VEARY_SMALL = 10 ** -10
 
-
 def get_thetas(r, h):
     """
     :param r: variable r
-    :param h: local neighborhodd size
+    :param h: local neighborhood size
     :return: theta(r)
     """
     thetas = np.exp((-r ** 2) / ((h / 2) ** 2))
@@ -132,7 +131,7 @@ def get_term2(center: np.ndarray, centers: np.ndarray, h: float):
 
     # r_norm = np.linalg.norm(r,axis = 1)
     # DIFFERS FROM PAPER
-    # betas =np.einsum('i,i->i', thetas, density_weights)# / r2
+    # betas =np.einsum('i,i->i', thetas, density_weights) / r2
     betas = np.einsum('i,i->i', thetas, r)
 
     denom = np.einsum('i->', betas)
@@ -173,6 +172,7 @@ def get_sigma(center, centers, h):
 
     if np.iscomplex(values).any():
         values = np.real(values)
+
         vectors = np.real(vectors)
         vectors_norm = np.sqrt(np.einsum('ij,ij->i', vectors, vectors))
         vectors = vectors / vectors_norm

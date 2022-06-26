@@ -2,8 +2,18 @@ import numpy as np
 from scipy.spatial import distance
 import time
 
+from enum import Enum, unique
+
 from skeleton.params import get_term1, get_sigma, get_term2
 from skeleton.utils import unit_vector
+
+
+@unique
+class CenterType(Enum):
+    NON_BRANCH = 1,
+    BRANCH = 2,
+    BRIDGE = 3,
+    REMOVED = 4,
 
 
 class Center:
@@ -453,14 +463,16 @@ class Centers:
 
                 # If here we have two bridge points in 1 local nneighboorhood:
                 # So we merge them:
-                branch1 = center.branch_number;
-                branch2 = neighbour.branch_number;
+                branch1 = center.branch_number
+                branch2 = neighbour.branch_number
 
                 # Check if we are connected to the head or tail of the branch
                 if self.skeleton[branch1]['head_bridge_connection'][1] == center.index:
                     index_branch1_connection = 0
                 elif self.skeleton[branch1]['tail_bridge_connection'][1] == center.index:
                     index_branch1_connection = -1
+                else:
+                    print("fuck!")
                 # else:
                 #     raise Exception(
                 #         "ERROR in 'merge_bridge_points': COULDNT FIND THE BRIDGE INDEX IN THE BRIDGE_CONNECTIONS OF THE SPECIFIED BRANCH")
@@ -468,6 +480,8 @@ class Centers:
                     index_branch2_connection = 0
                 elif self.skeleton[branch2]['tail_bridge_connection'][1] == neighbour.index:
                     index_branch2_connection = -1
+                else:
+                    print("fuck!!")
                 # else:
                 #     raise Exception(
                 #         "ERROR in 'merge_bridge_points': COULDNT FIND THE BRIDGE INDEX IN THE BRIDGE_CONNECTIONS OF THE SPECIFIED BRANCH")
@@ -643,7 +657,7 @@ class Centers:
                 continue
 
             # Our head is connected to a bridge point of another branch.
-            # Thus our head has NO bridge point
+            # Thus, our head has NO bridge point,
             # and we need to change this in the branch from which this is the bridge_point
             if index == branch_list[0]:
                 head_bridge_connection[0] = False

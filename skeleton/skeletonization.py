@@ -5,6 +5,9 @@ import sys
 import time
 
 import skeleton.center as sct
+
+from skeleton.center import CenterType
+
 from skeleton.params import get_h0, get_density_weights
 from skeleton.utils import get_local_points
 
@@ -38,9 +41,9 @@ def skeletonize(points, n_centers=1000, max_points=10000, max_iterations=50, try
         bridge_points = 0
         non_branch_points = 0
         for center in skl_centers.myCenters:
-            if center.label == 'bridge_point':
+            if center.label == CenterType.BRIDGE:
                 bridge_points += 1
-            if center.label == 'non_branch_point':
+            if center.label == CenterType.NON_BRANCH:
                 non_branch_points += 1
 
         sys.stdout.write("\n\nIteration:{}, h:{}, bridge_points:{}\n\n".format(i, round(h, 3), bridge_points))

@@ -20,7 +20,7 @@ class Center:
     def __init__(self, center, h, index):
         self.center = center
         self.h = h
-        self.label = "non_branch_point"
+        self.label = CenterType.NON_BRANCH
         self.index = index
         self.connections = []
         self.bridge_connections = None
@@ -31,17 +31,17 @@ class Center:
         self.sigma = 0.5
 
     def set_non_branch(self):
-        if self.label != 'branch_point' and self.label != 'removed':
-            self.set_label('non_branch_point')
+        if self.label != CenterType.BRANCH and self.label != CenterType.REMOVED:
+            self.set_label(CenterType.NON_BRANCH)
             self.connections = []
             self.bridge_connections = None
             self.head_tail = False
             self.branch_number = None
 
     def set_as_bridge_point(self, key, connection):
-        if self.label != 'removed':
+        if self.label != CenterType.REMOVED:
             self.set_non_branch()
-            self.set_label('bridge_point')
+            self.set_label(CenterType.BRIDGE)
             self.bridge_connections = connection
             self.branch_number = key
 
@@ -50,30 +50,30 @@ class Center:
         self.bridge_connections = None
         self.head_tail = False
         self.branch_number = None
-        self.label = 'branch_point'
+        self.label = CenterType.BRANCH
         self.branch_number = key
 
     def set_eigen_vectors(self, eigen_vectors):
-        if self.label == "non_branch_point":
+        if self.label == CenterType.NON_BRANCH:
             self.eigen_vectors = eigen_vectors
 
     def set_sigma(self, sigma):
-        if self.label != "branch_point":
+        if self.label != CenterType.BRANCH:
             self.sigma = sigma
 
     def set_closest_neighbours(self, closest_neighbours):
         self.closest_neighbours = closest_neighbours
 
-    def set_label(self, label):
-        if self.label != 'removed':
+    def set_label(self, label: CenterType):
+        if self.label != CenterType.REMOVED:
             self.label = label
 
     def set_center(self, center):
-        if self.label != "branch_point":
+        if self.label != CenterType.BRANCH:
             self.center = center
 
     def set_h(self, h):
-        if self.label != "branch_point":
+        if self.label != CenterType.BRANCH:
             self.h = h
 
 
@@ -84,7 +84,7 @@ class Centers:
         my_non_branch_centers = []
 
         for center in self.myCenters:
-            if center.label == 'non_branch_point' or center.label == 'bridge_point':
+            if center.label == CenterType.NON_BRANCH or center.label == CenterType.BRIDGE:
                 my_non_branch_centers.append(center)
         self.my_non_branch_centers = my_non_branch_centers
 
@@ -99,7 +99,7 @@ class Centers:
             sorted_local_distances = distances[center.index, closest] ** 2
 
             # Returns zero if ALL values are within the range
-            in_neighboorhood = np.argmax(sorted_local_distances >= (center.h) ** 2)
+            in_neighboorhood = np.argmax(sorted_local_distances >= center.h ** 2)
             if in_neighboorhood == 0:
                 in_neighboorhood = -1
 
@@ -141,7 +141,7 @@ class Centers:
 
         for index in sorted(indices, reverse=True):
             center = self.myCenters[index]
-            center.set_label("removed")
+            center.set_label(CenterType.REMOVED)
             self.centers[center.index] = [9999, 9999, 9999]
 
         self.set_my_non_branch_centers()
@@ -151,7 +151,7 @@ class Centers:
 
         non_branch_points = []
         for center in self.myCenters:
-            if center.label != "branch_point" and center.label != "removed":
+            if center.label != CenterType.BRANCH and center.label != CenterType.REMOVED:
                 non_branch_points.append(center.index)
 
         return non_branch_points
@@ -424,7 +424,7 @@ class Centers:
 
             neighbour = self.myCenters[neighbour]
 
-            if neighbour.label == "branch_point" or neighbour.label == 'removed':
+            if neighbour.label == CenterType.BRANCH or neighbour.label == CenterType.REMOVED:
                 continue
 
             # If current neighbour is too far away we break
@@ -446,7 +446,7 @@ class Centers:
     def connect_bridge_points_in_h(self):
         # Connects bridge points which are within the same neighboorhood
         for center in self.myCenters:
-            if center.label != 'bridge_point':
+            if center.label != CenterType.BRIDGE:
                 continue
             # Check the local neighbourhood for any other bridge_points
             for neighbour in center.closest_neighbours:
@@ -454,10 +454,10 @@ class Centers:
                 neighbour = self.myCenters[neighbour]
 
                 # Is it a bridge point?
-                if neighbour.label != 'bridge_point':
+                if neighbour.label != CenterType.BRIDGE:
                     continue
 
-                # Is it still in the local neighboorhood?
+                # Is it still in the local neighbourhood?
                 if sum((neighbour.center - center.center) ** 2) > (2 * center.h) ** 2:
                     break
 
@@ -653,7 +653,7 @@ class Centers:
 
             center = self.myCenters[index]
             # Do we have a bridge point?
-            if center.label != 'bridge_point':
+            if center.label != CenterType.BRIDGE:
                 continue
 
             # Our head is connected to a bridge point of another branch.
@@ -733,10 +733,10 @@ class Centers:
 
         connection = False
         neighbour = None
-        for neighbour in myCenter.closest_neighbours:
+        for n in myCenter.closest_neighbours:
 
-            neighbour = self.myCenters[neighbour]
-            if neighbour.label == 'branch_point' or neighbour.label == 'removed':
+            neighbour = self.myCenters[n]
+            if neighbour.label == CenterType.BRANCH or neighbour.label == CenterType.REMOVED:
                 continue
 
             # #Check if inside local neighbourhood
@@ -745,10 +745,10 @@ class Centers:
             r2_sum = np.einsum('i->', r2)
 
             # 1)
-            if r2_sum > (self.search_distance) ** 2:
+            if r2_sum > self.search_distance ** 2:
                 break
             # 2)
-            elif r2_sum <= (self.too_close_threshold) ** 2:
+            elif r2_sum <= self.too_close_threshold ** 2:
                 self.remove_centers(neighbour.index)
                 continue
 
@@ -872,14 +872,14 @@ class Centers:
                     new_tail = self.myCenters[branch_list[-1]]
 
                     # If we encounter a bridge from a different branch we are connected to this branch and thus do not have a bridge point anymore and need to adjust that particular branch as well
-                    if new_head.label == 'bridge_point' and new_head.index != branch['head_bridge_connection'][1]:
+                    if new_head.label == CenterType.BRIDGE and new_head.index != branch['head_bridge_connection'][1]:
                         # Update this branch head bridge connection
                         branch['head_bridge_connection'][0] = False
                         branch['head_bridge_connection'][1] = new_head.bridge_connections
                         # Update the branch from which this bridge_point originated
                         self.bridge_2_branch(new_head.index, key)
 
-                    elif new_tail.label == 'bridge_point' and new_tail.index != branch['tail_bridge_connection'][1]:
+                    elif new_tail.label == CenterType.BRIDGE and new_tail.index != branch['tail_bridge_connection'][1]:
 
                         branch['tail_bridge_connection'][0] = False
                         branch['tail_bridge_connection'][1] = new_tail.bridge_connections
@@ -942,20 +942,20 @@ class Centers:
         if len(self.skeleton) > 1:
             remove_centers = []
             for center in self.myCenters:
-                if center.label == 'removed' or center.label == 'branch_point':
+                if center.label == CenterType.REMOVED or center.label == CenterType.BRANCH:
                     continue
 
                 # 1) If no neighbours:
                 if not center.closest_neighbours.any():
                     # If a bridge point we make it a branch
-                    if center.label == 'bridge_point':
+                    if center.label == CenterType.BRIDGE:
                         self.bridge_2_branch(center.index, center.branch_number)
-                    elif center.label == 'non_branch_point':
+                    elif center.label == CenterType.NON_BRANCH:
                         remove_centers.append(center.index)
                     # Skip the other checks
                     continue
                 # 2)
-                if center.label == 'bridge_point':
+                if center.label == CenterType.BRIDGE:
                     has_non_branch_point_neighbours = False
                     # Check if all close neighbours are branch_points:
                     for neighbour in center.closest_neighbours:
@@ -965,14 +965,14 @@ class Centers:
                         if sum((neighbour.center - center.center) ** 2) > (2 * center.h) ** 2:
                             break
 
-                        if neighbour.label != 'branch_point' and neighbour.label != 'removed':
+                        if neighbour.label != CenterType.BRANCH and neighbour.label != CenterType.REMOVED:
                             has_non_branch_point_neighbours = True
                             break
                     if not has_non_branch_point_neighbours:
                         self.bridge_2_branch(center.index, center.branch_number)
 
                 # 3)
-                if center.label == 'non_branch_point':
+                if center.label == CenterType.NON_BRANCH:
                     N_branch_points = 0
                     N_non_branch_points = 0
                     # Check if all close neighbours are branch_points:
@@ -983,9 +983,9 @@ class Centers:
                         if np.sum((neighbour.center - center.center) ** 2) > center.h ** 2:
                             break
 
-                        if neighbour.label == 'branch_point':
+                        if neighbour.label == CenterType.BRANCH:
                             N_branch_points += 1
-                        elif neighbour.label == 'non_branch_point' or neighbour.label == 'bridge_point':
+                        elif neighbour.label == CenterType.NON_BRANCH or neighbour.label == CenterType.BRIDGE:
                             N_non_branch_points += 1
 
                     if N_branch_points > N_non_branch_points:
@@ -1024,7 +1024,7 @@ class Centers:
                 if sum((neighbour.center - center.center) ** 2) > self.too_close_threshold ** 2:
                     break
 
-                if neighbour.label != 'non_branch_point':
+                if neighbour.label != CenterType.NON_BRANCH:
                     continue
 
                 remove_centers.append(neighbour.index)

@@ -30,3 +30,14 @@ def get_local_points(points, centers, h, max_local_points=50000):
         return random.sample(local_indices, max_local_points)
 
     return local_indices
+
+
+def project_one_point(q, p, n):
+    """
+    :param q: a point
+    :param p: the point on the plane
+    :param n: the normal vector of the plane
+    :return: the projected point
+    """
+    n = unit_vector(n)
+    return q - np.dot(q - p, n) * n

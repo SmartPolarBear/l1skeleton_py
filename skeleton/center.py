@@ -141,6 +141,8 @@ class Centers:
             neighbors = [self.myCenters[j] for j in self.myCenters[i].closest_neighbours if
                          self.myCenters[j] is not None]
 
+            neighbors = [n for n in neighbors if n.label != CenterType.REMOVED]
+
             if len(neighbors) < 4:
                 # remove the points which are far away from the others
                 self.myCenters[i].set_label(CenterType.REMOVED)

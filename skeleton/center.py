@@ -149,6 +149,7 @@ class Centers:
 
             enough += 1
             self.myCenters[i] = recenter_around(self.myCenters[i], neighbors)
+
         print("E/NE", enough, not_enough)
 
     def remove_centers(self, indices):
@@ -755,6 +756,7 @@ class Centers:
         for n in myCenter.closest_neighbours:
 
             neighbour = self.myCenters[n]
+
             if neighbour.label == CenterType.BRANCH or neighbour.label == CenterType.REMOVED:
                 continue
 
@@ -787,6 +789,10 @@ class Centers:
             if cos_theta <= -0.9:
                 connection = True
             break
+
+        if neighbour is None:
+            return False, -1
+
         return connection, neighbour.index
 
     def try_extend_branch(self, branch, head_bridge_connection=True, tail_bridge_connection=True):

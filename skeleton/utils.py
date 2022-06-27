@@ -1,6 +1,8 @@
 import numpy as np
 import random
 
+from skspatial.objects import Plane, Point
+
 
 def unit_vector(vector):
     return vector / np.linalg.norm(vector)
@@ -39,5 +41,6 @@ def project_one_point(q, p, n):
     :param n: the normal vector of the plane
     :return: the projected point
     """
-    n = unit_vector(n)
-    return q - np.dot(q - p, n) * n
+    plane = Plane(point=p, normal=n)
+    pt = Point(q)
+    return plane.project_point(pt)

@@ -85,4 +85,5 @@ def skeletonize(points, n_centers=1000, max_points=10000, max_iterations=50, try
         h = h + h0 / 2
 
     skl_centers.recenter()
+
     return skl_centers

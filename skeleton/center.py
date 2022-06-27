@@ -147,10 +147,10 @@ class Centers:
         enough = 0
         not_enough = 0
         for i in range(len(self.myCenters)):
-            k, idx, _ = self.kdt.search_hybrid_vector_3d(self.myCenters[i].center, radius=self.h, max_nn=knn)
+            k, idx, _ = self.kdt.search_hybrid_vector_3d(self.myCenters[i].center, radius=self.h0, max_nn=knn)
             neighbors = self.points[list(idx)]
 
-            if k < 4:
+            if k < 5:
                 # remove the points which are far away from the others
                 self.myCenters[i].set_label(CenterType.REMOVED)
                 not_enough += 1

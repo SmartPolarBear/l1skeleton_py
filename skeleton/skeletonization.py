@@ -30,7 +30,7 @@ def skeletonize(points, n_centers=1000, max_points=10000, max_iterations=50, try
     random_centers = random.sample(range(0, len(points)), n_centers)
     centers = points[random_centers, :]
 
-    skl_centers = sct.Centers(centers, h, maxPoints=2000)
+    skl_centers = sct.Centers(centers, points, h, maxPoints=2000)
     density_weights = get_density_weights(points, h0)
 
     print("Max iterations: {}, Number points: {}, Number centers: {}".format(max_iterations, len(points), len(centers)))

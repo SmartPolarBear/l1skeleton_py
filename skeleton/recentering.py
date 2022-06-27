@@ -23,20 +23,23 @@ def visualize_result(projected, neighbors, p):
     prj.colors = o3d.utility.Vector3dVector([[0, 0.9, 0] for p in projected])
 
     original = o3d.geometry.PointCloud()
-    original.points = o3d.utility.Vector3dVector([c.center for c in neighbors])
+    original.points = o3d.utility.Vector3dVector([p for p in neighbors])
     original.colors = o3d.utility.Vector3dVector([[0, 0, 0.9] for p in neighbors])
 
     cloud = o3d.geometry.PointCloud()
     cts = [p]
     cloud.points = o3d.utility.Vector3dVector(cts)
-    cloud.colors = o3d.utility.Vector3dVector([[0.9, 0.0, 0.0] for p in cts])
+    cloud.colors = o3d.utility.Vector3dVector([[0.9, 0.0, 0.0] for _ in cts])
 
     o3d.visualization.draw_geometries([prj, original, cloud])
 
 
-def recenter_around(center, neighbors):
+def recenter_around(center, neighbors, max_dist_move):
     normal = center.eigen_vectors[:, 0]
     # normal = utils.unit_vector(normal)
+
+    if not normal.any():
+        return center
 
     if np.isnan(normal).any() or np.isinf(normal).any():
         return center
@@ -47,13 +50,14 @@ def recenter_around(center, neighbors):
         return center
 
     projected = np.array(
-        [utils.project_one_point(c.center, p, normal) for c in neighbors if np.isfinite(c.center).all()])
+        [utils.project_one_point(q, p, normal) for q in neighbors if np.isfinite(q).all()])
 
-    visualize_result(projected, neighbors, p)
+    # visualize_result(projected, neighbors, p)
 
     success, cp = ellipse_center(projected)
     if not success:
-        # FIXME
+        # FIXME: use bounding box instead
+        print("Cannot fit with ellipse!")
         return center
 
     nxy = normal[[0, 1]]
@@ -62,8 +66,8 @@ def recenter_around(center, neighbors):
 
     cp = np.append(cp, pz)
 
-    # print(center.center - cp)
+    if np.linalg.norm(center.center - cp) > max_dist_move:
+        return center
 
     center.center = cp
-
     return center

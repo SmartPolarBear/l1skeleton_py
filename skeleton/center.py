@@ -8,6 +8,7 @@ from skeleton.params import get_term1, get_sigma, get_term2
 from skeleton.utils import unit_vector
 
 from skeleton.recentering import recenter_around
+import open3d as o3d
 
 
 @unique
@@ -107,7 +108,15 @@ class Centers:
 
             center.set_closest_neighbours(closest[1:in_neighboorhood])
 
-    def __init__(self, centers, h0, maxPoints):
+    def __init__(self, centers, points, h0, maxPoints):
+        self.points = points
+
+        self.pcd = o3d.geometry.PointCloud()
+        self.pcd.points = o3d.utility.Vector3dVector(self.points)
+        self.pcd.paint_uniform_color([0.5, 0.5, 0.5])
+
+        self.kdt = o3d.geometry.KDTreeFlann(self.pcd)
+
         # Making sure centers are never the same as the actual points which can lead to bad things
         self.centers = centers + 10 ** -20
         self.myCenters = []
@@ -134,23 +143,21 @@ class Centers:
         self.too_close_threshold = 0.01
         self.allowed_branch_length = 5
 
-    def recenter(self):
+    def recenter(self, knn=400):
         enough = 0
         not_enough = 0
         for i in range(len(self.myCenters)):
-            neighbors = [self.myCenters[j] for j in self.myCenters[i].closest_neighbours if
-                         self.myCenters[j] is not None]
+            k, idx, _ = self.kdt.search_hybrid_vector_3d(self.myCenters[i].center, radius=self.h, max_nn=knn)
+            neighbors = self.points[list(idx)]
 
-            neighbors = [n for n in neighbors if n.label != CenterType.REMOVED]
-
-            if len(neighbors) < 4:
+            if k < 4:
                 # remove the points which are far away from the others
                 self.myCenters[i].set_label(CenterType.REMOVED)
                 not_enough += 1
                 continue
 
             enough += 1
-            self.myCenters[i] = recenter_around(self.myCenters[i], neighbors)
+            self.myCenters[i] = recenter_around(self.myCenters[i], neighbors, max_dist_move=self.h)
 
         print("E/NE", enough, not_enough)
 

@@ -2,13 +2,11 @@ import numpy as np
 from scipy.spatial import distance
 import time
 
-
 from skeleton.params import get_term1, get_sigma, get_term2
 from skeleton.utils import unit_vector, plane_dist
 
 from skeleton.recentering import recenter_around
 import open3d as o3d
-
 
 from skeleton.center_type import CenterType
 
@@ -141,21 +139,26 @@ class Centers:
         self.allowed_branch_length = 5
 
     def recenter(self, knn=400):
-        threshold = self.h0 / 32
 
         enough = 0
         not_enough = 0
+        zero_normals = 0
         for i in range(len(self.myCenters)):
             p = self.myCenters[i]
             n = p.dominant_vector()
 
-            k, idx, _ = self.kdt.search_hybrid_vector_3d(p.center, radius=self.h0, max_nn=knn)
+            if np.allclose(n, np.zeros_like(n)):
+                self.myCenters[i].set_label(CenterType.REMOVED)
+                zero_normals += 1
+                continue
+
+            k, idx, _ = self.kdt.search_knn_vector_3d(p.center, knn=knn)
             pts = self.points[list(idx)]
             # neighbors=pts
 
             dists = [plane_dist(q, p.center, n) for q in pts]
 
-            neighbors = pts[dists <= threshold]
+            neighbors = pts[dists <= self.h0 / 16.0]
 
             if len(neighbors) < 4:
                 # remove the points which are far away from the others
@@ -164,9 +167,10 @@ class Centers:
                 continue
 
             enough += 1
-            p = recenter_around(p, neighbors, max_dist_move=threshold)
 
-        print("E/NE", enough, not_enough)
+            self.myCenters[i] = recenter_around(p, neighbors, max_dist_move=self.h0)
+
+        print("E/NE/0N", enough, not_enough, zero_normals)
 
     def remove_centers(self, indices):
         """

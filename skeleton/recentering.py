@@ -39,16 +39,13 @@ def recenter_around(center, neighbors, max_dist_move):
     normal = center.dominant_vector()
     # normal = utils.unit_vector(normal)
 
-    if not normal.any():
+    if np.allclose(normal, np.zeros_like(normal)):
         return center
 
-    if np.isnan(normal).any() or np.isinf(normal).any():
+    if not np.isfinite(normal).all():
         return center
 
-    p = center.center
-
-    if np.isnan(normal).any() or np.isinf(normal).any():
-        return center
+    p = center.center.copy()
 
     projected = np.array(
         [utils.project_one_point(q, p, normal) for q in neighbors if np.isfinite(q).all()])
@@ -57,8 +54,6 @@ def recenter_around(center, neighbors, max_dist_move):
 
     success, cp = ellipse_center(projected)
     if not success:
-        # FIXME: use bounding box instead?
-        print("Cannot fit with ellipse!")
         center.set_label(CenterType.REMOVED)
         return center
 

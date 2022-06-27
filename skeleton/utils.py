@@ -53,7 +53,6 @@ def plane_dist(q, p, n):
     :param n: the normal vector of the plane
     :return:
     """
-    n = n.copy() * 1e4
     pq = q - p
     dot = np.dot(pq, n)
     ret = dot / np.linalg.norm(n)

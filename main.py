@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     # points = np.asarray(pcd.points)
 
-    myCenters = skeletonize(points, max_points=8000, n_centers=2000)
+    myCenters = skeletonize(points, max_points=8000, n_centers=1000)
 
     if len(points) > 5000:
         random_indices = random.sample(range(0, len(points)), 5000)

@@ -7,6 +7,8 @@ from enum import Enum, unique
 from skeleton.params import get_term1, get_sigma, get_term2
 from skeleton.utils import unit_vector
 
+from skeleton.recentering import recenter_around
+
 
 @unique
 class CenterType(Enum):
@@ -131,6 +133,23 @@ class Centers:
         self.search_distance = .4
         self.too_close_threshold = 0.01
         self.allowed_branch_length = 5
+
+    def recenter(self):
+        enough = 0
+        not_enough = 0
+        for i in range(len(self.myCenters)):
+            neighbors = [self.myCenters[j] for j in self.myCenters[i].closest_neighbours if
+                         self.myCenters[j] is not None]
+
+            if len(neighbors) < 4:
+                # remove the points which are far away from the others
+                self.myCenters[i].set_label(CenterType.REMOVED)
+                not_enough += 1
+                continue
+
+            enough += 1
+            self.myCenters[i] = recenter_around(self.myCenters[i], neighbors)
+        print("E/NE", enough, not_enough)
 
     def remove_centers(self, indices):
         """

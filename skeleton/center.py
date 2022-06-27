@@ -791,6 +791,7 @@ class Centers:
             break
 
         if neighbour is None:
+            # FIXME
             return False, -1
 
         return connection, neighbour.index

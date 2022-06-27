@@ -1,6 +1,7 @@
 import numpy as np
 
 import skeleton.utils as utils
+from skeleton.center_type import CenterType
 
 from skimage.measure import EllipseModel
 
@@ -35,7 +36,7 @@ def visualize_result(projected, neighbors, p):
 
 
 def recenter_around(center, neighbors, max_dist_move):
-    normal = center.eigen_vectors[:, 0]
+    normal = center.dominant_vector()
     # normal = utils.unit_vector(normal)
 
     if not normal.any():
@@ -56,8 +57,9 @@ def recenter_around(center, neighbors, max_dist_move):
 
     success, cp = ellipse_center(projected)
     if not success:
-        # FIXME: use bounding box instead
+        # FIXME: use bounding box instead?
         print("Cannot fit with ellipse!")
+        center.set_label(CenterType.REMOVED)
         return center
 
     nxy = normal[[0, 1]]
@@ -66,8 +68,10 @@ def recenter_around(center, neighbors, max_dist_move):
 
     cp = np.append(cp, pz)
 
-    if np.linalg.norm(center.center - cp) > max_dist_move:
-        return center
+    move = cp - center.center
+    l_move = np.linalg.norm(move)
+    if l_move > max_dist_move:
+        cp = center.center + move * (max_dist_move / l_move)
 
     center.center = cp
     return center

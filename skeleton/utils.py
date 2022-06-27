@@ -44,3 +44,19 @@ def project_one_point(q, p, n):
     plane = Plane(point=p, normal=n)
     pt = Point(q)
     return plane.project_point(pt)
+
+
+def plane_dist(q, p, n):
+    """
+    :param q: a point
+    :param p: a point on plane
+    :param n: the normal vector of the plane
+    :return:
+    """
+    n = n.copy() * 1e4
+    pq = q - p
+    dot = np.dot(pq, n)
+    ret = dot / np.linalg.norm(n)
+    if not np.isfinite([ret]).all():
+        return 0x7fffffff
+    return ret

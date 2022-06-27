@@ -2,21 +2,15 @@ import numpy as np
 from scipy.spatial import distance
 import time
 
-from enum import Enum, unique
 
 from skeleton.params import get_term1, get_sigma, get_term2
-from skeleton.utils import unit_vector
+from skeleton.utils import unit_vector, plane_dist
 
 from skeleton.recentering import recenter_around
 import open3d as o3d
 
 
-@unique
-class CenterType(Enum):
-    NON_BRANCH = 1,
-    BRANCH = 2,
-    BRIDGE = 3,
-    REMOVED = 4,
+from skeleton.center_type import CenterType
 
 
 class Center:
@@ -78,6 +72,9 @@ class Center:
     def set_h(self, h):
         if self.label != CenterType.BRANCH:
             self.h = h
+
+    def dominant_vector(self):
+        return self.eigen_vectors[:, 0]
 
 
 class Centers:
@@ -144,20 +141,30 @@ class Centers:
         self.allowed_branch_length = 5
 
     def recenter(self, knn=400):
+        threshold = self.h0 / 32
+
         enough = 0
         not_enough = 0
         for i in range(len(self.myCenters)):
-            k, idx, _ = self.kdt.search_hybrid_vector_3d(self.myCenters[i].center, radius=self.h0, max_nn=knn)
-            neighbors = self.points[list(idx)]
+            p = self.myCenters[i]
+            n = p.dominant_vector()
 
-            if k < 5:
+            k, idx, _ = self.kdt.search_hybrid_vector_3d(p.center, radius=self.h0, max_nn=knn)
+            pts = self.points[list(idx)]
+            # neighbors=pts
+
+            dists = [plane_dist(q, p.center, n) for q in pts]
+
+            neighbors = pts[dists <= threshold]
+
+            if len(neighbors) < 4:
                 # remove the points which are far away from the others
-                self.myCenters[i].set_label(CenterType.REMOVED)
+                p.set_label(CenterType.REMOVED)
                 not_enough += 1
                 continue
 
             enough += 1
-            self.myCenters[i] = recenter_around(self.myCenters[i], neighbors, max_dist_move=self.h)
+            p = recenter_around(p, neighbors, max_dist_move=threshold)
 
         print("E/NE", enough, not_enough)
 

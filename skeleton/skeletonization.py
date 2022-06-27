@@ -6,8 +6,7 @@ import time
 
 import skeleton.center as sct
 
-from skeleton.center import CenterType
-from skeleton.recentering import recenter_around
+from skeleton.center_type import CenterType
 
 from skeleton.params import get_h0, get_density_weights
 from skeleton.utils import get_local_points

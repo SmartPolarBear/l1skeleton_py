@@ -10,8 +10,7 @@ if __name__ == "__main__":
     # points = np.load("data/simple_tree.npy")
 
     # pcd = o3d.io.read_point_cloud("data/8_Couple.ply", format='ply')
-    # pcd = o3d.io.read_point_cloud("data/7_Yoga3.ply", format='ply')
-    #
+    # pcd = o3d.io.read_point_cloud("data/5_Plane.ply", format='ply')
     # points = np.asarray(pcd.points)
 
     myCenters = skeletonize(points, max_points=8000, n_centers=1000)

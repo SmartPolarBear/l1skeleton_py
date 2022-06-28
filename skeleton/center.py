@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 from scipy.spatial import distance
 import time
@@ -140,43 +142,57 @@ class Centers:
         self.allowed_branch_length = 5
 
     def get_bare_points(self, copy: bool = False) -> Iterable[np.ndarray]:
-        if copy:
-            return [c.center.copy() for c in self.myCenters if c.label != "non_branch_point"]
-        else:
-            return [c.center for c in self.myCenters if c.label != "non_branch_point"]
+        ret = []
+        for key in self.skeleton:
+            if copy:
+                ret += [self.myCenters[k].center.copy() for k in self.skeleton[key]['branch'] if
+                        self.myCenters[k].label != "non_branch_point"]
+            else:
+                ret += [self.myCenters[k].center for k in self.skeleton[key]['branch'] if
+                        self.myCenters[k].label != "non_branch_point"]
+        return ret
 
-    def recenter(self, knn: int = 200) -> None:
+    def recenter(self, downsampling_rate: float = 0.5, knn: int = 200) -> None:
+        # downsample each branch
+        for key in self.skeleton:
+            # branch = self.skeleton[key]
+            # branch_list = branch['branch']
+            self.skeleton[key]['branch'] = random.sample(self.skeleton[key]['branch'],
+                                                         k=int(downsampling_rate * len(self.skeleton[key]['branch'])))
+
         THRESHOLD: Final = self.h0 / 16.0
 
         enough = 0
         not_enough = 0
         zero_normals = 0
-        for i in range(len(self.myCenters)):
-            p = self.myCenters[i]
-            n = p.dominant_vector()
 
-            if np.allclose(n, np.zeros_like(n)):
-                self.myCenters[i].set_label(CenterType.REMOVED)
-                zero_normals += 1
-                continue
+        for key in self.skeleton:
+            for i in self.skeleton[key]['branch']:
+                p = self.myCenters[i]
+                n = p.dominant_vector()
 
-            k, idx, _ = self.kdt.search_knn_vector_3d(p.center, knn=knn)
-            pts = self.points[list(idx[1:])]
-            # neighbors = pts
+                if np.allclose(n, np.zeros_like(n)):
+                    self.myCenters[i].set_label(CenterType.REMOVED)
+                    zero_normals += 1
+                    continue
 
-            dists = [plane_dist(q, p.center, n) for q in pts]
+                k, idx, _ = self.kdt.search_knn_vector_3d(p.center, knn=knn)
+                pts = self.points[list(idx[1:])]
+                # neighbors = pts
 
-            neighbors = pts[dists <= THRESHOLD]
+                dists = [plane_dist(q, p.center, n) for q in pts]
 
-            if len(neighbors) < 4:
-                # remove the points which are far away from the others
-                p.set_label(CenterType.REMOVED)
-                not_enough += 1
-                continue
+                neighbors = pts[dists <= THRESHOLD]
 
-            enough += 1
+                if len(neighbors) < 4:
+                    # remove the points which are far away from the others
+                    p.set_label(CenterType.REMOVED)
+                    not_enough += 1
+                    continue
 
-            self.myCenters[i] = recenter_around(p, neighbors, max_dist_move=self.h0)
+                enough += 1
+
+                self.myCenters[i] = recenter_around(p, neighbors, max_dist_move=self.h0)
 
         print("E/NE/0N", enough, not_enough, zero_normals)
 

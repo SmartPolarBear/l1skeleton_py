@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # pcd = o3d.io.read_point_cloud("data/7_Yoga3.ply", format='ply')
     # points = np.asarray(pcd.points)
 
-    myCenters = skeletonize(points, max_points=8000, n_centers=1000)
+    myCenters = skeletonize(points, n_centers=1500)
 
     if len(points) > 5000:
         random_indices = random.sample(range(0, len(points)), 5000)
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     original.colors = o3d.utility.Vector3dVector([[0, 0.9, 0] for p in points])
 
     cloud = o3d.geometry.PointCloud()
-    cts = [c.center for c in myCenters.myCenters if c.label != "non_branch_point"]
+    cts = myCenters.get_bare_points()
     cloud.points = o3d.utility.Vector3dVector(cts)
     cloud.colors = o3d.utility.Vector3dVector([[0.9, 0.0, 0.0] for p in cts])
 

@@ -47,6 +47,7 @@ class SkeletonBeforeAfterVisualizer:
 def skeletonize(points, n_centers=1000,
                 max_points=10000,
                 max_iterations=50,
+                downsampling_rate=0.5,
                 try_make_skeleton=True,
                 recenter_knn=200):
     assert len(points) > n_centers
@@ -119,8 +120,8 @@ def skeletonize(points, n_centers=1000,
 
         h = h + h0 / 2.0
 
-    with SkeletonBeforeAfterVisualizer(skl_centers):
+    with SkeletonBeforeAfterVisualizer(skl_centers, enable=True):
         if recenter_knn > 0:
-            skl_centers.recenter(knn=recenter_knn)
+            skl_centers.recenter(downsampling_rate=downsampling_rate, knn=recenter_knn)
 
     return skl_centers

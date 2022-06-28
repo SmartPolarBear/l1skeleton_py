@@ -11,8 +11,44 @@ from skeleton.center_type import CenterType
 from skeleton.params import get_h0, get_density_weights
 from skeleton.utils import get_local_points
 
+import open3d as o3d
 
-def skeletonize(points, n_centers=1000, max_points=10000, max_iterations=50, try_make_skeleton=True):
+
+class SkeletonBeforeAfterVisualizer:
+    def __init__(self, skl: sct.Centers, enable=True):
+        self.skl = skl
+        self.enable = enable
+
+    def __enter__(self):
+        if not self.enable:
+            return
+
+        self.before_pts = self.skl.get_bare_points(copy=True)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if not self.enable:
+            return
+
+        self.after_cts = self.skl.get_bare_points(copy=True)
+        self._visualize_result()
+
+    def _visualize_result(self):
+        before_pcd = o3d.geometry.PointCloud()
+        before_pcd.points = o3d.utility.Vector3dVector(self.before_pts)
+        before_pcd.colors = o3d.utility.Vector3dVector([[0, 0.9, 0] for p in self.before_pts])
+
+        after_pcd = o3d.geometry.PointCloud()
+        after_pcd.points = o3d.utility.Vector3dVector([p for p in self.after_cts])
+        after_pcd.colors = o3d.utility.Vector3dVector([[0, 0, 0.9] for p in self.after_cts])
+
+        o3d.visualization.draw_geometries([before_pcd, after_pcd])
+
+
+def skeletonize(points, n_centers=1000,
+                max_points=10000,
+                max_iterations=50,
+                try_make_skeleton=True,
+                recenter_knn=200):
     assert len(points) > n_centers
 
     if len(points) > max_points:
@@ -24,7 +60,8 @@ def skeletonize(points, n_centers=1000, max_points=10000, max_iterations=50, try
 
     print("h0:", h0)
 
-    random.seed(int(time.time()))
+    # random.seed(int(time.time()))
+    random.seed(3074)
 
     random_centers = random.sample(range(0, len(points)), n_centers)
     centers = points[random_centers, :]
@@ -83,6 +120,8 @@ def skeletonize(points, n_centers=1000, max_points=10000, max_iterations=50, try
 
         h = h + h0 / 2
 
-    skl_centers.recenter()
+    with SkeletonBeforeAfterVisualizer(skl_centers):
+        if recenter_knn > 0:
+            skl_centers.recenter(knn=recenter_knn)
 
     return skl_centers

@@ -10,6 +10,8 @@ import open3d as o3d
 
 from skeleton.center_type import CenterType
 
+from typing import Iterable
+
 
 class Center:
     def __init__(self, center, h, index):
@@ -138,8 +140,13 @@ class Centers:
         self.too_close_threshold = 0.01
         self.allowed_branch_length = 5
 
-    def recenter(self, knn=400):
+    def get_bare_points(self, copy: bool = False) -> Iterable[np.ndarray]:
+        if copy:
+            return [c.center.copy() for c in self.myCenters if c.label != "non_branch_point"]
+        else:
+            return [c.center for c in self.myCenters if c.label != "non_branch_point"]
 
+    def recenter(self, knn: int = 100) -> None:
         enough = 0
         not_enough = 0
         zero_normals = 0
@@ -152,9 +159,9 @@ class Centers:
                 zero_normals += 1
                 continue
 
-            k, idx, _ = self.kdt.search_knn_vector_3d(p.center, knn=knn)
+            k, idx, _ = self.kdt.search_hybrid_vector_3d(p.center, radius=self.h0, max_nn=knn)
             pts = self.points[list(idx)]
-            # neighbors=pts
+            # neighbors = pts
 
             dists = [plane_dist(q, p.center, n) for q in pts]
 

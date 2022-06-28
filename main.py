@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # pcd = o3d.io.read_point_cloud("data/7_Yoga3.ply", format='ply')
     # points = np.asarray(pcd.points)
 
-    myCenters = skeletonize(points, max_points=8000, n_centers=1500)
+    myCenters = skeletonize(points, n_centers=800)
 
     if len(points) > 5000:
         random_indices = random.sample(range(0, len(points)), 5000)

@@ -107,12 +107,14 @@ class Centers:
 
             center.set_closest_neighbours(closest[1:in_neighboorhood])
 
-    def __init__(self, centers, points, h0):
+    def __init__(self, centers, points):
         self.points = points
 
         self.pcd = o3d.geometry.PointCloud()
         self.pcd.points = o3d.utility.Vector3dVector(self.points)
         self.pcd.paint_uniform_color([0.5, 0.5, 0.5])
+
+        self.h = self.h0 = self.compute_h0()
 
         self.kdt = o3d.geometry.KDTreeFlann(self.pcd)
 
@@ -122,13 +124,11 @@ class Centers:
         self.my_non_branch_centers = []
         index = 0
         for center in centers:
-            self.myCenters.append(Center(center, h0, index))
+            self.myCenters.append(Center(center, self.h0, index))
             index += 1
         self.skeleton = {}
         self.closest = []
         self.sigmas = np.array([None] * len(centers))
-        self.h0 = h0
-        self.h = h0
         self.eigen_vectors = [None] * len(centers)
         self.branch_points = [None] * len(centers)
         self.non_branch_points = [None] * len(centers)
@@ -140,6 +140,22 @@ class Centers:
         self.search_distance = .4
         self.too_close_threshold = 0.01
         self.allowed_branch_length = 5
+
+    def compute_h0(self):
+        oct = o3d.geometry.Octree()
+        oct.convert_from_point_cloud(self.pcd)
+        bbox = oct.get_oriented_bounding_box()
+        points = np.asarray(bbox.get_box_points())
+        print("Bounding box:", points)
+        dists = distance.squareform(distance.pdist(points))
+        diag = np.max(dists)
+        return 2 * diag / (len(self.points) ** (1.0 / 3.0))
+
+    def get_h0(self):
+        return self.h0
+
+    def get_h(self):
+        return self.h
 
     def get_bare_points(self, copy: bool = False) -> Iterable[np.ndarray]:
         ret = []

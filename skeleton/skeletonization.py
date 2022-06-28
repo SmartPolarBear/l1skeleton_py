@@ -53,11 +53,6 @@ def skeletonize(points, n_centers=1000,
     assert len(points) > n_centers
     assert len(points) > recenter_knn
 
-    h0 = get_h0(points) / 2
-    h = h0
-
-    print("h0:", h0)
-
     if len(points) > max_points:
         random_indices = random.sample(range(0, len(points)), max_points)
         points = points[random_indices, :]
@@ -68,7 +63,12 @@ def skeletonize(points, n_centers=1000,
     random_centers = random.sample(range(0, len(points)), n_centers)
     centers = points[random_centers, :]
 
-    skl_centers = sct.Centers(centers, points, h0)
+    skl_centers = sct.Centers(centers, points=points)
+
+    h = h0 = skl_centers.get_h0()
+
+    print("h0:", h0)
+
     density_weights = get_density_weights(points, h0)
 
     print("Max iterations: {}, Number points: {}, Number centers: {}".format(max_iterations, len(points), len(centers)))

@@ -2,7 +2,7 @@ import numpy as np
 import time
 
 EXTREME_SMALL = 10 ** -323
-VEARY_SMALL = 10 ** -10
+VERY_SMALL = 10 ** -10
 
 
 def get_thetas(r, h):
@@ -24,7 +24,7 @@ def get_alphas(x: np.ndarray, points: np.ndarray, h: float):
     :param h: size of local neighborhood, float
     :return: alpha(i,j)
     """
-    r = np.linalg.norm(x - points, axis=1) + VEARY_SMALL
+    r = np.linalg.norm(x - points, axis=1) + VERY_SMALL
     theta = get_thetas(r, h)
 
     alphas = theta / r
@@ -38,7 +38,7 @@ def get_betas(x, points, h):
     :param h: size of local neighborhood, float
     :return: beta(i,i')
     """
-    r = np.linalg.norm(x - points, axis=1) + VEARY_SMALL
+    r = np.linalg.norm(x - points, axis=1) + VERY_SMALL
     theta = get_thetas(r, h)
 
     betas = theta / r ** 2
@@ -189,21 +189,3 @@ def get_sigma(center, centers, h):
     t2 = time.perf_counter()
 
     return sigma, vectors_sorted, t2 - t1
-
-
-def get_h0(points):
-    x_max = points[:, 0].max()
-    x_min = points[:, 0].min()
-
-    y_max = points[:, 1].max()
-    y_min = points[:, 1].min()
-
-    z_max = points[:, 2].max()
-    z_min = points[:, 2].min()
-    print("Bounding Box: \n\tx:", x_max - x_min, "\n\ty:", y_max - y_min, "\n\tz:", z_max - z_min)
-
-    diagonal = np.sqrt(np.square(x_max - x_min) + np.square(y_max - y_min) + np.square(z_max - z_min))
-
-    n_points = len(points)
-
-    return 2 * diagonal / (n_points ** (1. / 3))

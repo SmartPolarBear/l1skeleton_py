@@ -50,15 +50,16 @@ def skeletonize(points, n_centers=1000,
                 try_make_skeleton=True,
                 recenter_knn=200):
     assert len(points) > n_centers
-
-    if len(points) > max_points:
-        random_indices = random.sample(range(0, len(points)), max_points)
-        points = points[random_indices, :]
+    assert len(points) > recenter_knn
 
     h0 = get_h0(points) / 2
     h = h0
 
     print("h0:", h0)
+
+    if len(points) > max_points:
+        random_indices = random.sample(range(0, len(points)), max_points)
+        points = points[random_indices, :]
 
     # random.seed(int(time.time()))
     random.seed(3074)
@@ -66,7 +67,7 @@ def skeletonize(points, n_centers=1000,
     random_centers = random.sample(range(0, len(points)), n_centers)
     centers = points[random_centers, :]
 
-    skl_centers = sct.Centers(centers, points, h, maxPoints=2000)
+    skl_centers = sct.Centers(centers, points, h0)
     density_weights = get_density_weights(points, h0)
 
     print("Max iterations: {}, Number points: {}, Number centers: {}".format(max_iterations, len(points), len(centers)))
@@ -85,11 +86,9 @@ def skeletonize(points, n_centers=1000,
 
         sys.stdout.write("\n\nIteration:{}, h:{}, bridge_points:{}\n\n".format(i, round(h, 3), bridge_points))
 
-        centers = skl_centers.centers
-
         last_error = 0
-        for j in range(30):
-            local_indices = get_local_points(points, centers, h)
+        for j in range(max_iterations // 2):
+            local_indices = get_local_points(points, skl_centers.centers, h)
             error = skl_centers.contract(points, local_indices, h, density_weights)
             skl_centers.update_properties()
 
@@ -118,7 +117,7 @@ def skeletonize(points, n_centers=1000,
 
         last_non_branch = non_branch_points
 
-        h = h + h0 / 2
+        h = h + h0 / 2.0
 
     with SkeletonBeforeAfterVisualizer(skl_centers):
         if recenter_knn > 0:

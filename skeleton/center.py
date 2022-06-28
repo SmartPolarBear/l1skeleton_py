@@ -10,7 +10,7 @@ import open3d as o3d
 
 from skeleton.center_type import CenterType
 
-from typing import Iterable
+from typing import Iterable, Final
 
 
 class Center:
@@ -105,7 +105,7 @@ class Centers:
 
             center.set_closest_neighbours(closest[1:in_neighboorhood])
 
-    def __init__(self, centers, points, h0, maxPoints):
+    def __init__(self, centers, points, h0):
         self.points = points
 
         self.pcd = o3d.geometry.PointCloud()
@@ -130,7 +130,6 @@ class Centers:
         self.eigen_vectors = [None] * len(centers)
         self.branch_points = [None] * len(centers)
         self.non_branch_points = [None] * len(centers)
-        self.maxPoints = maxPoints
         self.get_nearest_neighbours()
         self.set_my_non_branch_centers()
         self.Nremoved = 0
@@ -146,7 +145,9 @@ class Centers:
         else:
             return [c.center for c in self.myCenters if c.label != "non_branch_point"]
 
-    def recenter(self, knn: int = 100) -> None:
+    def recenter(self, knn: int = 200) -> None:
+        THRESHOLD: Final = self.h0 / 16.0
+
         enough = 0
         not_enough = 0
         zero_normals = 0
@@ -159,13 +160,13 @@ class Centers:
                 zero_normals += 1
                 continue
 
-            k, idx, _ = self.kdt.search_hybrid_vector_3d(p.center, radius=self.h0, max_nn=knn)
-            pts = self.points[list(idx)]
+            k, idx, _ = self.kdt.search_knn_vector_3d(p.center, knn=knn)
+            pts = self.points[list(idx[1:])]
             # neighbors = pts
 
             dists = [plane_dist(q, p.center, n) for q in pts]
 
-            neighbors = pts[dists <= self.h0 / 16.0]
+            neighbors = pts[dists <= THRESHOLD]
 
             if len(neighbors) < 4:
                 # remove the points which are far away from the others

@@ -10,6 +10,7 @@ import open3d as o3d
 
 def ellipse_center(projected):
     xy = projected[:, [0, 1]]
+
     ell = EllipseModel()
     if not ell.estimate(xy):
         return False, None

@@ -8,7 +8,7 @@ import skeleton.center as sct
 
 from skeleton.center_type import CenterType
 
-from skeleton.params import get_h0, get_density_weights
+from skeleton.params import get_density_weights
 from skeleton.utils import get_local_points
 
 import open3d as o3d
@@ -60,10 +60,7 @@ def skeletonize(points, n_centers=1000,
     # random.seed(int(time.time()))
     random.seed(3074)
 
-    random_centers = random.sample(range(0, len(points)), n_centers)
-    centers = points[random_centers, :]
-
-    skl_centers = sct.Centers(centers, points=points)
+    skl_centers = sct.Centers(points=points, center_count=n_centers)
 
     h = h0 = skl_centers.get_h0()
 
@@ -71,9 +68,10 @@ def skeletonize(points, n_centers=1000,
 
     density_weights = get_density_weights(points, h0)
 
-    print("Max iterations: {}, Number points: {}, Number centers: {}".format(max_iterations, len(points), len(centers)))
+    print("Max iterations: {}, Number points: {}, Number centers: {}".format(max_iterations, len(points),
+                                                                             len(skl_centers.centers)))
 
-    last_non_branch = len(centers)
+    last_non_branch = len(skl_centers.centers)
     non_change_iters = 0
     for i in range(max_iterations):
 

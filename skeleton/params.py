@@ -63,15 +63,15 @@ def get_density_weights(points, h0, for_center=False, center=None):
     if for_center:
         r = points - center
         r2 = np.einsum('ij,ij->i', r, r)
-        density_weights = np.einsum('i->', np.exp((-r2) / ((h0 / 4) ** 2)))
+        density_weights = 1 + np.einsum('i->', np.exp((-r2) / ((h0 / 2) ** 2)))
     else:
 
         for point in points:
             r = point - points
             r2 = np.einsum('ij,ij->i', r, r)
-            # This calculation includes the point itself thus one entry will be zero resultig in the needed + 1 in
+            # This calculation includes the point itself thus one entry will be zero resulting in the needed + 1 in
             # formula dj = 1+ sum(theta(p_i - p_j))
-            density_weight = np.einsum('i->', np.exp((-r2) / ((h0 / 4) ** 2)))
+            density_weight = 1 + np.einsum('i->', np.exp((-r2) / ((h0 / 2) ** 2)))
             density_weights.append(density_weight)
 
     return np.array(density_weights)

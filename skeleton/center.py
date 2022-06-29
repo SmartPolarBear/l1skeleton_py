@@ -164,17 +164,17 @@ class Centers:
         assert self.h0
 
         # gradually decrease voxel size to get the closest voxel count to the given count
-        # voxel_size = self.h0
-        #
-        # center_pcd = self.pcd.voxel_down_sample(voxel_size)
-        # while len(center_pcd.points) < count:
-        #     voxel_size /= 2.0
-        #     center_pcd = self.pcd.voxel_down_sample(voxel_size)
-        #
-        # print("Voxel down sampling to {}".format(len(center_pcd.points)))
-        # centers = np.asarray(center_pcd.points)
+        voxel_size = self.h0
 
-        centers = np.asarray(self.pcd.points)
+        center_pcd = self.pcd.voxel_down_sample(voxel_size)
+        while len(center_pcd.points) < count:
+            voxel_size /= 2.0
+            center_pcd = self.pcd.voxel_down_sample(voxel_size)
+
+        print("Voxel down sampling to {}".format(len(center_pcd.points)))
+        centers = np.asarray(center_pcd.points)
+
+        # centers = np.asarray(self.pcd.points)
 
         if len(centers) > count:
             random_centers = random.sample(range(0, len(centers)), count)
@@ -699,7 +699,9 @@ class Centers:
                         # Sets all branches with this bridge_point to False as well
                         self.bridge_2_branch(bridge_head, branch1)
                         # 4) Set all the indices with this bridge_point to None and start over
-                        bridge_points[indices] = None
+                        # bridge_points[indices] = None
+                        for i in indices:
+                            del bridge_points[i]
                         success = True
                         break
 
@@ -712,7 +714,10 @@ class Centers:
                         # self.skeleton[branch1]['tail_bridge_connection'][1] = bridge_tail
 
                         self.bridge_2_branch(bridge_tail, branch1)
-                        bridge_points[indices] = None
+                        # bridge_points[indices] = None
+                        for i in indices:
+                            del bridge_points[i]
+
                         success = True
                         break
 

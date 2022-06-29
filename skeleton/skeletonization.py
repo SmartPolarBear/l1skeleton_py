@@ -19,6 +19,8 @@ from skeleton.debug import SkeletonBeforeAfterVisualizer
 def skeletonize(points, n_centers=1000,
                 max_points=10000,
                 max_iterations=50,
+                dh=2.0,
+                error_tolerance=1e-5,
                 downsampling_rate=0.5,
                 try_make_skeleton=True,
                 recenter_knn=200):
@@ -63,13 +65,13 @@ def skeletonize(points, n_centers=1000,
 
         last_error = 0
         with SkeletonBeforeAfterVisualizer(skl_centers, enable=False):
-            for j in range(30):  # magic number
+            for j in range(50):  # magic number. do contracting at most 30 times
                 # local_indices = get_local_points(points, skl_centers.centers, h)
                 # error = skl_centers.contract(points, local_indices, h, density_weights)
                 error = skl_centers.contract(h, density_weights)
                 skl_centers.update_properties()
 
-                if np.abs(error - last_error) < 1e-5:
+                if np.abs(error - last_error) < error_tolerance:
                     break
 
                 last_error = error
@@ -94,9 +96,9 @@ def skeletonize(points, n_centers=1000,
 
         last_non_branch = non_branch_points
 
-        h = h + h0 / 2.0
+        h = h + h0 / dh
 
-    with SkeletonBeforeAfterVisualizer(skl_centers, enable=False):
+    with SkeletonBeforeAfterVisualizer(skl_centers, enable=True):
         if recenter_knn > 0:
             skl_centers.recenter(downsampling_rate=downsampling_rate, knn=recenter_knn)
 

@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # pcd = o3d.io.read_point_cloud("data/4_Mimosa.ply", format='ply')
     # points = np.asarray(pcd.points)
 
-    myCenters = skeletonize(points, n_centers=1500, downsampling_rate=1)
+    myCenters = skeletonize(points, n_centers=1500, downsampling_rate=1, dh=4)
 
     if len(points) > 5000:
         random_indices = random.sample(range(0, len(points)), 5000)
@@ -24,7 +24,6 @@ if __name__ == "__main__":
     original.colors = o3d.utility.Vector3dVector([[0, 0.9, 0] for p in points])
 
     all_centers = o3d.geometry.PointCloud()
-    # cts = myCenters.get_skeleton_points()
     cts = myCenters.get_all_centers(exclude=[])
     all_centers.points = o3d.utility.Vector3dVector(cts)
     all_centers.normals = o3d.utility.Vector3dVector([c.normal_vector() for c in myCenters.myCenters if c.label != 4])
@@ -35,4 +34,5 @@ if __name__ == "__main__":
     skeleton.points = o3d.utility.Vector3dVector(cts)
     skeleton.colors = o3d.utility.Vector3dVector([[0.9, 0.0, 0.0] for p in cts])
 
-    o3d.visualization.draw_geometries([original, all_centers, skeleton], point_show_normal=True)
+    # o3d.visualization.draw_geometries([original, all_centers, skeleton], point_show_normal=True)
+    o3d.visualization.draw_geometries([original, skeleton])

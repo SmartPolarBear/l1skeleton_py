@@ -31,8 +31,7 @@ def skeletonize(points, n_centers=1000,
         random_indices = random.sample(range(0, len(points)), max_points)
         points = points[random_indices, :]
 
-    # random.seed(int(time.time()))
-    random.seed(3074)
+    random.seed(int(time.time()))
 
     skl_centers = sct.Centers(points=points, center_count=n_centers)
 

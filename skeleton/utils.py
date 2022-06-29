@@ -22,7 +22,7 @@ def get_local_points_fast(points, centers, h, max_local_points=50000):
         indices_square = np.where(where_square == True)[0]
 
         # Get points which comply to x^2, y^2, z^2 <= r^2
-        square_squared = np.square(square - [x, y, z])
+        square_squared = np.square(square - center)
         where_sphere = np.sum(square_squared, axis=1) <= h ** 2
         local_sphere_indices = indices_square[where_sphere]
 

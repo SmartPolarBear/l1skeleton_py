@@ -611,6 +611,7 @@ class Centers:
                     index_branch1_connection = -1
                 else:
                     print("fuck!")
+                    continue
                 # else:
                 #     raise Exception(
                 #         "ERROR in 'merge_bridge_points': COULDNT FIND THE BRIDGE INDEX IN THE BRIDGE_CONNECTIONS OF THE SPECIFIED BRANCH")
@@ -620,6 +621,8 @@ class Centers:
                     index_branch2_connection = -1
                 else:
                     print("fuck!!")
+                    continue
+
                 # else:
                 #     raise Exception(
                 #         "ERROR in 'merge_bridge_points': COULDNT FIND THE BRIDGE INDEX IN THE BRIDGE_CONNECTIONS OF THE SPECIFIED BRANCH")
@@ -695,8 +698,8 @@ class Centers:
                         # We choose the first banch as the 'parent'  it will adopt this bridge_point as branch point. All other branches with this bridge_point will simply loose it.
                         branch1 = indices[0][0]
                         # Set these values to False as after this we do not have a bridge point anymore
-                        # self.skeleton[branch1]['head_bridge_connection'][0] = False
-                        # self.skeleton[branch1]['head_bridge_connection'][1] = bridge_head
+                        self.skeleton[branch1]['head_bridge_connection'][0] = False
+                        self.skeleton[branch1]['head_bridge_connection'][1] = bridge_head
                         # Sets all branches with this bridge_point to False as well
                         self.bridge_2_branch(bridge_head, branch1)
                         # 4) Set all the indices with this bridge_point to None and start over
@@ -710,8 +713,8 @@ class Centers:
                     if count_tail > 1:
                         indices = np.where(bridge_points == bridge_tail)
                         branch1 = indices[0][0]  # Becomes part of the branch
-                        # self.skeleton[branch1]['tail_bridge_connection'][0] = False
-                        # self.skeleton[branch1]['tail_bridge_connection'][1] = bridge_tail
+                        self.skeleton[branch1]['tail_bridge_connection'][0] = False
+                        self.skeleton[branch1]['tail_bridge_connection'][1] = bridge_tail
 
                         self.bridge_2_branch(bridge_tail, branch1)
                         bridge_points[indices] = None
@@ -782,7 +785,7 @@ class Centers:
                 - If they are and the head / tail of the branch this mean the branch is connected to another branch
             2) Finds the potential bridge points
             3) sets the labels of the centers
-            4) adds the branch to the skeleon list of branches
+            4) adds the branch to the skeleton list of branches
         """
         head_bridge_connection = [True, None]
         tail_bridge_connection = [True, None]
@@ -937,24 +940,25 @@ class Centers:
             head = branch[0]
             # Get vector conencted head to the rest of the skeleton
             head_bridge_connection_vector = self.centers[branch[1]] - self.centers[head]
-
-            # find a possibleextensions of this connection
-            connection, index = self.find_extension_point(head, head_bridge_connection_vector)
-            # Inserts it
-            if connection:
-                if not connection == branch[-1]:
-                    branch.insert(0, index)
-                    found_connection = True
+            if not np.allclose(head_bridge_connection_vector, np.zeros_like(head_bridge_connection_vector)):
+                # find a possible extensions of this connection
+                connection, index = self.find_extension_point(head, head_bridge_connection_vector)
+                # Inserts it
+                if connection:
+                    if not connection == branch[-1]:
+                        branch.insert(0, index)
+                        found_connection = True
 
         if tail_bridge_connection:
             tail = branch[-1]
             tail_bridge_connection_vector = self.centers[branch[-2]] - self.centers[tail]
 
-            connection, index = self.find_extension_point(tail, tail_bridge_connection_vector)
-            if connection:
-                if not connection == branch[0]:
-                    branch.extend([index])
-                    found_connection = True
+            if not np.allclose(tail_bridge_connection_vector, np.zeros_like(tail_bridge_connection_vector)):
+                connection, index = self.find_extension_point(tail, tail_bridge_connection_vector)
+                if connection:
+                    if not connection == branch[0]:
+                        branch.extend([index])
+                        found_connection = True
 
         return branch, found_connection
 

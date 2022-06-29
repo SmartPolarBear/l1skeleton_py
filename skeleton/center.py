@@ -188,21 +188,24 @@ class Centers:
     def get_h(self):
         return self.h
 
-    def get_all_centers(self, copy: bool = False) -> Iterable[np.ndarray]:
+    def get_all_centers(self, copy: bool = False, exclude=None) -> Iterable[np.ndarray]:
+        if exclude is None:
+            exclude = [CenterType.REMOVED]
+
         if copy:
-            return [c.center.copy() for c in self.myCenters if c.label != CenterType.NON_BRANCH]
+            return [c.center.copy() for c in self.myCenters if c.label not in exclude]
         else:
-            return [c.center for c in self.myCenters if c.label != CenterType.NON_BRANCH]
+            return [c.center for c in self.myCenters if c.label not in exclude]
 
     def get_skeleton_points(self, copy: bool = False) -> Iterable[np.ndarray]:
         ret = []
         for key in self.skeleton:
             if copy:
                 ret += [self.myCenters[k].center.copy() for k in self.skeleton[key]['branch'] if
-                        self.myCenters[k].label != CenterType.NON_BRANCH]
+                        self.myCenters[k].label != CenterType.REMOVED]
             else:
                 ret += [self.myCenters[k].center for k in self.skeleton[key]['branch'] if
-                        self.myCenters[k].label != CenterType.NON_BRANCH]
+                        self.myCenters[k].label != CenterType.REMOVED]
         return ret
 
     def recenter(self, downsampling_rate: float = 0.5, knn: int = 200) -> None:
@@ -220,9 +223,17 @@ class Centers:
         zero_normals = 0
 
         for key in self.skeleton:
-            for i in self.skeleton[key]['branch']:
+            # skl_pcd = o3d.geometry.PointCloud()
+            # skl_pcd.points = o3d.utility.Vector3dVector(
+            #     [self.myCenters[i].center for i in self.skeleton[key]['branch']])
+            #
+            # sum_pcd: o3d.geometry.PointCloud = self.pcd + skl_pcd
+            # sum_pcd.estimate_normals()
+
+            for idx, i in enumerate(self.skeleton[key]['branch']):
                 p = self.myCenters[i]
                 n = p.normal_vector()
+                # n = sum_pcd.normals[idx + len(self.pcd.points)]
 
                 if np.allclose(n, np.zeros_like(n)):
                     self.myCenters[i].set_label(CenterType.REMOVED)
@@ -440,12 +451,12 @@ class Centers:
         # local_indices = get_local_points(self.kdt, centers=self.centers, h=h)
         local_indices = get_local_points_fast(self.points, centers=self.centers, h=h)
 
-        center_pcd = o3d.geometry.PointCloud()
-        center_pcd.points = o3d.utility.Vector3dVector([c.center for c in self.myCenters])
-
-        sum_pcd: o3d.geometry.PointCloud = self.pcd + center_pcd
-        sum_pcd.estimate_normals()
-        base_idx = len(self.pcd.points)
+        # center_pcd = o3d.geometry.PointCloud()
+        # center_pcd.points = o3d.utility.Vector3dVector([c.center for c in self.myCenters])
+        #
+        # sum_pcd: o3d.geometry.PointCloud = self.pcd + center_pcd
+        # sum_pcd.estimate_normals()
+        # base_idx = len(self.pcd.points)
 
         for idx, myCenter in enumerate(self.myCenters):
 

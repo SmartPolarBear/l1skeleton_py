@@ -652,7 +652,7 @@ class Centers:
 
     def connect_identical_bridge_points(self):
         """
-        Connectes branches which are connected to an identical bridge point
+        Connects branches which are connected to an identical bridge point
         1) Makes a list with the connection values of all the heads and tails. The value is None if it is connected to another branch
         2) Finds a similar index
         3) Connects these branches
@@ -669,6 +669,7 @@ class Centers:
                 bridges_of_branch.append(branch['head_bridge_connection'][1])
             else:
                 bridges_of_branch.append(None)
+
             if branch['tail_bridge_connection'][0]:
                 bridges_of_branch.append(branch['tail_bridge_connection'][1])
             else:
@@ -676,7 +677,7 @@ class Centers:
 
             bridge_points.append(bridges_of_branch)
 
-        bridge_points = np.array(bridge_points)
+        bridge_points = np.array(bridge_points, dtype=object)
         success = True
         while success:
             success = False
@@ -699,9 +700,8 @@ class Centers:
                         # Sets all branches with this bridge_point to False as well
                         self.bridge_2_branch(bridge_head, branch1)
                         # 4) Set all the indices with this bridge_point to None and start over
-                        # bridge_points[indices] = None
-                        for i in indices:
-                            del bridge_points[i]
+                        bridge_points[indices] = None
+
                         success = True
                         break
 
@@ -714,9 +714,7 @@ class Centers:
                         # self.skeleton[branch1]['tail_bridge_connection'][1] = bridge_tail
 
                         self.bridge_2_branch(bridge_tail, branch1)
-                        # bridge_points[indices] = None
-                        for i in indices:
-                            del bridge_points[i]
+                        bridge_points[indices] = None
 
                         success = True
                         break
@@ -724,7 +722,7 @@ class Centers:
     def merge_bridge_points(self):
         """
         1) Connects bridge points which are within the same neighboorhood
-        2) Connectes branches which are connected to an identical bridge point
+        2) Connects branches which are connected to an identical bridge point
         """
 
         # 1)

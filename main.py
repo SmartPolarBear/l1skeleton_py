@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # pcd = o3d.io.read_point_cloud("data/4_Mimosa.ply", format='ply')
     # points = np.asarray(pcd.points)
 
-    myCenters = skeletonize(points, n_centers=1500, downsampling_rate=1, dh=4)
+    myCenters = skeletonize(points, n_centers=1500, downsampling_rate=1, dh=2.0)
 
     if len(points) > 5000:
         random_indices = random.sample(range(0, len(points)), 5000)

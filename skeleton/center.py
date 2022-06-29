@@ -5,7 +5,7 @@ from scipy.spatial import distance
 import time
 
 from skeleton.params import get_term1, get_sigma, get_term2
-from skeleton.utils import unit_vector, plane_dist, get_local_points
+from skeleton.utils import unit_vector, plane_dist, get_local_points, get_local_points_fast
 
 from skeleton.recentering import recenter_around
 import open3d as o3d
@@ -437,7 +437,8 @@ class Centers:
         error_center = 0
         N = 0
 
-        local_indices = get_local_points(self.kdt, centers=self.centers, h=h)
+        # local_indices = get_local_points(self.kdt, centers=self.centers, h=h)
+        local_indices = get_local_points_fast(self.points, centers=self.centers, h=h)
 
         center_pcd = o3d.geometry.PointCloud()
         center_pcd.points = o3d.utility.Vector3dVector([c.center for c in self.myCenters])

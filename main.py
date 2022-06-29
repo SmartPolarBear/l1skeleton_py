@@ -28,6 +28,8 @@ if __name__ == "__main__":
     # cts = myCenters.get_all_centers()
 
     cloud.points = o3d.utility.Vector3dVector(cts)
+    cloud.normals = o3d.utility.Vector3dVector([c.normal_vector() for c in myCenters.myCenters if c.label != 4])
     cloud.colors = o3d.utility.Vector3dVector([[0.9, 0.0, 0.0] for p in cts])
 
-    o3d.visualization.draw_geometries([original, cloud])
+    # o3d.visualization.draw_geometries([original, cloud], point_show_normal=True)
+    o3d.visualization.draw_geometries([cloud], point_show_normal=True)

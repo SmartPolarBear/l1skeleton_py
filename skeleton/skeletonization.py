@@ -23,13 +23,13 @@ class SkeletonBeforeAfterVisualizer:
         if not self.enable:
             return
 
-        self.before_pts = self.skl.get_bare_points(copy=True)
+        self.before_pts = self.skl.get_skeleton_points(copy=True)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not self.enable:
             return
 
-        self.after_cts = self.skl.get_bare_points(copy=True)
+        self.after_cts = self.skl.get_skeleton_points(copy=True)
         self._visualize_result()
 
     def _visualize_result(self):
@@ -62,6 +62,10 @@ def skeletonize(points, n_centers=1000,
 
     skl_centers = sct.Centers(points=points, center_count=n_centers)
 
+    # for i in range(len(skl_centers.myCenters)):
+    #     skl_centers.myCenters[i].set_label(CenterType.BRANCH)
+    # return skl_centers
+
     h = h0 = skl_centers.get_h0()
 
     print("h0:", h0)
@@ -86,7 +90,7 @@ def skeletonize(points, n_centers=1000,
         sys.stdout.write("\n\nIteration:{}, h:{}, bridge_points:{}\n\n".format(i, round(h, 3), bridge_points))
 
         last_error = 0
-        for j in range(max_iterations // 2):
+        for j in range(30):  # magic number
             local_indices = get_local_points(points, skl_centers.centers, h)
             error = skl_centers.contract(points, local_indices, h, density_weights)
             skl_centers.update_properties()

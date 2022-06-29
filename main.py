@@ -10,10 +10,10 @@ if __name__ == "__main__":
     # points = np.load("data/simple_tree.npy")
 
     # pcd = o3d.io.read_point_cloud("data/2_2D_Leaf.ply", format='ply')
-    # pcd = o3d.io.read_point_cloud("data/7_Yoga3.ply", format='ply')
+    # pcd = o3d.io.read_point_cloud("data/9_GLady.ply", format='ply')
     # points = np.asarray(pcd.points)
 
-    myCenters = skeletonize(points, n_centers=1500, downsampling_rate=0.8)
+    myCenters = skeletonize(points, n_centers=1500, downsampling_rate=1)
 
     if len(points) > 5000:
         random_indices = random.sample(range(0, len(points)), 5000)
@@ -24,7 +24,9 @@ if __name__ == "__main__":
     original.colors = o3d.utility.Vector3dVector([[0, 0.9, 0] for p in points])
 
     cloud = o3d.geometry.PointCloud()
-    cts = myCenters.get_bare_points()
+    cts = myCenters.get_skeleton_points()
+    # cts = myCenters.get_all_centers()
+
     cloud.points = o3d.utility.Vector3dVector(cts)
     cloud.colors = o3d.utility.Vector3dVector([[0.9, 0.0, 0.0] for p in cts])
 

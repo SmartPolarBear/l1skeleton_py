@@ -75,7 +75,7 @@ class Center:
         if self.label != CenterType.BRANCH:
             self.h = h
 
-    def dominant_vector(self):
+    def normal(self):
         return self.eigen_vectors[:, 0]
 
 
@@ -145,27 +145,36 @@ class Centers:
         self.allowed_branch_length = 5
 
     def _compute_h0(self):
-        oct = o3d.geometry.Octree()
-        oct.convert_from_point_cloud(self.pcd)
-        bbox = oct.get_oriented_bounding_box()
+
+        bbox = self.pcd.get_oriented_bounding_box(robust=True)
+
+        # bbox_pcd = o3d.geometry.PointCloud()
+        # bbox_pcd.points = o3d.utility.Vector3dVector(
+        #     np.asarray(self.pcd.get_axis_aligned_bounding_box().get_box_points()))
+        # bbox_pcd.colors = o3d.utility.Vector3dVector([[0, 0, 0.9]] * 8)
+        # o3d.visualization.draw_geometries([self.pcd, bbox_pcd])
+
         points = np.asarray(bbox.get_box_points())
         print("Bounding box:", points)
         dists = distance.squareform(distance.pdist(points))
         diag = np.max(dists)
-        return 2 * diag / (len(self.points) ** (1.0 / 3.0))
+        return (2.0 * diag) / (len(self.pcd.points) ** (1.0 / 3.0))
 
     def _sample_centers(self, count):
         assert self.h0
 
-        voxel_size = self.h0
-
         # gradually decrease voxel size to get the closest voxel count to the given count
-        centers = np.asarray(self.pcd.voxel_down_sample(voxel_size).points)
-        while len(centers) < count:
-            voxel_size /= 2.0
-            centers = np.asarray(self.pcd.voxel_down_sample(voxel_size).points)
+        # voxel_size = self.h0
+        #
+        # center_pcd = self.pcd.voxel_down_sample(voxel_size)
+        # while len(center_pcd.points) < count:
+        #     voxel_size /= 2.0
+        #     center_pcd = self.pcd.voxel_down_sample(voxel_size)
+        #
+        # print("Voxel down sampling to {}".format(len(center_pcd.points)))
+        # centers = np.asarray(center_pcd.points)
 
-        print("Voxel down sampling to {}".format(len(centers)))
+        centers = np.asarray(self.pcd.points)
 
         if len(centers) > count:
             random_centers = random.sample(range(0, len(centers)), count)
@@ -179,19 +188,25 @@ class Centers:
     def get_h(self):
         return self.h
 
-    def get_bare_points(self, copy: bool = False) -> Iterable[np.ndarray]:
+    def get_all_centers(self, copy: bool = False) -> Iterable[np.ndarray]:
+        if copy:
+            return [c.center.copy() for c in self.myCenters if c.label != CenterType.NON_BRANCH]
+        else:
+            return [c.center for c in self.myCenters if c.label != CenterType.NON_BRANCH]
+
+    def get_skeleton_points(self, copy: bool = False) -> Iterable[np.ndarray]:
         ret = []
         for key in self.skeleton:
             if copy:
                 ret += [self.myCenters[k].center.copy() for k in self.skeleton[key]['branch'] if
-                        self.myCenters[k].label != "non_branch_point"]
+                        self.myCenters[k].label != CenterType.NON_BRANCH]
             else:
                 ret += [self.myCenters[k].center for k in self.skeleton[key]['branch'] if
-                        self.myCenters[k].label != "non_branch_point"]
+                        self.myCenters[k].label != CenterType.NON_BRANCH]
         return ret
 
     def recenter(self, downsampling_rate: float = 0.5, knn: int = 200) -> None:
-        # downsample each branch
+        # down sample each branch
         for key in self.skeleton:
             # branch = self.skeleton[key]
             # branch_list = branch['branch']
@@ -207,7 +222,7 @@ class Centers:
         for key in self.skeleton:
             for i in self.skeleton[key]['branch']:
                 p = self.myCenters[i]
-                n = p.dominant_vector()
+                n = p.normal()
 
                 if np.allclose(n, np.zeros_like(n)):
                     self.myCenters[i].set_label(CenterType.REMOVED)

@@ -37,7 +37,7 @@ def visualize_result(projected, neighbors, p):
 
 
 def recenter_around(center, neighbors, max_dist_move):
-    normal = center.normal()
+    normal = center.normal_vector()
     # normal = utils.unit_vector(normal)
 
     if np.allclose(normal, np.zeros_like(normal)):

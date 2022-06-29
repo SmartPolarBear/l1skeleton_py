@@ -12,6 +12,7 @@ from skeleton.params import get_density_weights
 from skeleton.utils import get_local_points
 
 import open3d as o3d
+from tqdm import tqdm
 
 
 class SkeletonBeforeAfterVisualizer:
@@ -90,9 +91,10 @@ def skeletonize(points, n_centers=1000,
         sys.stdout.write("\n\nIteration:{}, h:{}, bridge_points:{}\n\n".format(i, round(h, 3), bridge_points))
 
         last_error = 0
-        for j in range(30):  # magic number
-            local_indices = get_local_points(points, skl_centers.centers, h)
-            error = skl_centers.contract(points, local_indices, h, density_weights)
+        for j in tqdm(range(30), desc="Contracting"):  # magic number
+            # local_indices = get_local_points(points, skl_centers.centers, h)
+            # error = skl_centers.contract(points, local_indices, h, density_weights)
+            error = skl_centers.contract(h, density_weights)
             skl_centers.update_properties()
 
             if np.abs(error - last_error) < 0.001:
@@ -110,7 +112,7 @@ def skeletonize(points, n_centers=1000,
         elif non_branch_points < last_non_branch:
             non_change_iters = 0
 
-        if non_change_iters >= 10:
+        if non_change_iters >= 5:
             print("Cannot make more branch points")
             break
 

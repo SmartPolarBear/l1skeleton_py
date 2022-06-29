@@ -5,7 +5,7 @@ from scipy.spatial import distance
 import time
 
 from skeleton.params import get_term1, get_sigma, get_term2
-from skeleton.utils import unit_vector, plane_dist
+from skeleton.utils import unit_vector, plane_dist, get_local_points
 
 from skeleton.recentering import recenter_around
 import open3d as o3d
@@ -75,7 +75,7 @@ class Center:
         if self.label != CenterType.BRANCH:
             self.h = h
 
-    def normal(self):
+    def normal_vector(self):
         return self.eigen_vectors[:, 0]
 
 
@@ -222,7 +222,7 @@ class Centers:
         for key in self.skeleton:
             for i in self.skeleton[key]['branch']:
                 p = self.myCenters[i]
-                n = p.normal()
+                n = p.normal_vector()
 
                 if np.allclose(n, np.zeros_like(n)):
                     self.myCenters[i].set_label(CenterType.REMOVED)
@@ -418,7 +418,7 @@ class Centers:
                     # print("ERROR: branch {} has multiple counts of index {}...".format(branch['branch'], index))
                     break
 
-    def contract(self, points, local_indices, h, density_weights, mu=0.35):
+    def contract(self, h, density_weights, mu=0.35):
         """
         Updates the centers by the algorithm suggested in "L1-medial skeleton of Point Cloud 2010"
 
@@ -437,7 +437,16 @@ class Centers:
         error_center = 0
         N = 0
 
-        for myCenter in self.myCenters:
+        local_indices = get_local_points(self.kdt, centers=self.centers, h=h)
+
+        center_pcd = o3d.geometry.PointCloud()
+        center_pcd.points = o3d.utility.Vector3dVector([c.center for c in self.myCenters])
+
+        sum_pcd: o3d.geometry.PointCloud = self.pcd + center_pcd
+        sum_pcd.estimate_normals()
+        base_idx = len(self.pcd.points)
+
+        for idx, myCenter in enumerate(self.myCenters):
 
             # Get the closest 50 centers to do calculations with
             centers_indices = myCenter.closest_neighbours
@@ -445,7 +454,7 @@ class Centers:
             centers_in = np.array(self.centers[centers_indices])
 
             my_local_indices = local_indices[myCenter.index]
-            local_points = points[my_local_indices]
+            local_points = self.points[my_local_indices]
 
             # Check if we have enough points and centers
             shape = local_points.shape

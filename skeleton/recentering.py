@@ -55,7 +55,7 @@ def recenter_around(center, neighbors, max_dist_move):
 
     success, cp = ellipse_center(projected)
     if not success:
-        center.set_label(CenterType.REMOVED)
+        # center.set_label(CenterType.REMOVED)
         return center
 
     nxy = normal[[0, 1]]

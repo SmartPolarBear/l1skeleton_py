@@ -216,10 +216,9 @@ class Centers:
             self.skeleton[key]['branch'] = random.sample(self.skeleton[key]['branch'],
                                                          k=int(downsampling_rate * len(self.skeleton[key]['branch'])))
 
-        THRESHOLD: Final = self.h0 / 16.0
+        THRESHOLD: Final = self.h0 / 32.0
 
         enough = 0
-        not_enough = 0
         zero_normals = 0
 
         for key in self.skeleton:
@@ -232,6 +231,7 @@ class Centers:
 
             for idx, i in enumerate(self.skeleton[key]['branch']):
                 p = self.myCenters[i]
+
                 n = p.normal_vector()
                 # n = sum_pcd.normals[idx + len(self.pcd.points)]
 
@@ -248,17 +248,11 @@ class Centers:
 
                 neighbors = pts[dists <= THRESHOLD]
 
-                if len(neighbors) < 4:
-                    # remove the points which are far away from the others
-                    p.set_label(CenterType.REMOVED)
-                    not_enough += 1
-                    continue
-
                 enough += 1
 
                 self.myCenters[i] = recenter_around(p, neighbors, max_dist_move=self.h0)
 
-        print("E/NE/0N", enough, not_enough, zero_normals)
+        print("E/0N", enough, zero_normals)
 
     def remove_centers(self, indices):
         """
@@ -1097,7 +1091,8 @@ class Centers:
                     continue
 
                 # 1) If no neighbours:
-                if not center.closest_neighbours.any():
+                # if not center.closest_neighbours.any():
+                if len(center.closest_neighbours) <= 5:
                     # If a bridge point we make it a branch
                     if center.label == CenterType.BRIDGE:
                         self.bridge_2_branch(center.index, center.branch_number)
@@ -1182,4 +1177,4 @@ class Centers:
 
         if remove_centers:
             self.remove_centers(remove_centers)
-            print("removed", len(remove_centers), 'center points!')
+            print("removed", len(remove_centers), 'points!')

@@ -46,7 +46,7 @@ def get_betas(x, points, h):
     return np.array(betas)
 
 
-def get_density_weights(points, h0, for_center=False, center=None):
+def get_density_weights(points, hd, for_center=False, center=None):
     """
     INPUTS:
         x: 1x3 center we of interest, np.ndarray
@@ -63,7 +63,7 @@ def get_density_weights(points, h0, for_center=False, center=None):
     if for_center:
         r = points - center
         r2 = np.einsum('ij,ij->i', r, r)
-        density_weights = 1 + np.einsum('i->', np.exp((-r2) / ((h0 / 2) ** 2)))
+        density_weights = 1 + np.einsum('i->', np.exp((-r2) / ((hd / 2) ** 2)))
     else:
 
         for point in points:
@@ -71,7 +71,7 @@ def get_density_weights(points, h0, for_center=False, center=None):
             r2 = np.einsum('ij,ij->i', r, r)
             # This calculation includes the point itself thus one entry will be zero resulting in the needed + 1 in
             # formula dj = 1+ sum(theta(p_i - p_j))
-            density_weight = 1 + np.einsum('i->', np.exp((-r2) / ((h0 / 2) ** 2)))
+            density_weight = 1 + np.einsum('i->', np.exp((-r2) / ((hd / 2) ** 2)))
             density_weights.append(density_weight)
 
     return np.array(density_weights)
@@ -92,14 +92,14 @@ def get_term1(center: np.ndarray, points: np.ndarray, h: float, density_weights:
     r2 = np.einsum('ij,ij->i', r, r)
 
     thetas = np.exp(-r2 / ((h / 2) ** 2))
+
     # Clip to JUST not zero
-    # thetas =  np.clip(thetas, 10**-323, None)
+    # thetas = np.clip(thetas, 10 ** -323, None)
 
-    # DIFFERS FROM PAPER
-    # r_norm = np.sqrt(r_norm, axis = 1)
-    # alphas = thetas/r_norm
+    r_norm = np.sqrt(r2)
 
-    alphas = thetas / density_weights
+    alphas = thetas / r_norm
+    alphas /= density_weights
 
     denom = np.einsum('i->', alphas)
     if denom > 10 ** -20:
@@ -126,20 +126,15 @@ def get_term2(center: np.ndarray, centers: np.ndarray, h: float):
 
     x = center - centers
     r2 = np.einsum('ij,ij->i', x, x)
-    r = 1 / np.sqrt(r2)
-    # r3 = np.sum(r**1.2, axis = 1)
+
     thetas = np.exp((-r2) / ((h / 2) ** 2))
 
-    # r_norm = np.linalg.norm(r,axis = 1)
-    # DIFFERS FROM PAPER
-    # betas =np.einsum('i,i->i', thetas, density_weights) / r2
-    betas = np.einsum('i,i->i', thetas, r)
+    betas = thetas / r2
 
     denom = np.einsum('i->', betas)
 
     if denom > 10 ** -20:
         num = np.einsum('j,jk->k', betas, x)
-
         term2 = num / denom
     else:
         term2 = np.array(False)

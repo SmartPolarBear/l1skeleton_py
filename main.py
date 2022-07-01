@@ -6,14 +6,14 @@ import open3d as o3d
 from skeleton.skeletonization import skeletonize
 
 if __name__ == "__main__":
-    # points = np.load("data/default_original.npy")
+    points = np.load("data/default_original.npy")
     # points = np.load("data/simple_tree.npy")
 
-    pcd = o3d.io.read_point_cloud("data/4_Mimosa.ply", format='ply')
-    points = np.asarray(pcd.points)
+    # pcd = o3d.io.read_point_cloud("data/4_Mimosa.ply", format='ply')
+    # points = np.asarray(pcd.points)
 
     # mimosa: dh=8
-    myCenters = skeletonize(points, n_centers=1000, downsampling_rate=1, dh=4.0, recenter_knn=200)
+    myCenters = skeletonize(points, n_centers=1000, downsampling_rate=1, dh=4.0, recenter_knn=-1)
 
     if len(points) > 5000:
         random_indices = random.sample(range(0, len(points)), 5000)

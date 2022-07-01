@@ -11,9 +11,8 @@ from skeleton.center_type import CenterType
 from skeleton.params import get_density_weights
 from skeleton.utils import get_local_points
 
-import open3d as o3d
-from tqdm import tqdm
 from skeleton.debug import SkeletonBeforeAfterVisualizer
+from typing import Final
 
 
 def skeletonize(points, n_centers=1000,
@@ -40,6 +39,7 @@ def skeletonize(points, n_centers=1000,
     # return skl_centers
 
     h = h0 = skl_centers.get_h0()
+    hd: Final[float] = h0 / 2
 
     print("h0:", h0)
 

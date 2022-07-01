@@ -216,7 +216,7 @@ class Centers:
             self.skeleton[key]['branch'] = random.sample(self.skeleton[key]['branch'],
                                                          k=int(downsampling_rate * len(self.skeleton[key]['branch'])))
 
-        THRESHOLD: Final = self.h0 / 32.0
+        THRESHOLD: Final = self.h0 / 16.0
 
         enough = 0
         zero_normals = 0

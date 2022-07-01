@@ -67,7 +67,7 @@ def recenter_around(center, neighbors, max_dist_move):
     move = cp - center.center
     l_move = np.linalg.norm(move)
     if l_move > max_dist_move:
-        cp = center.center + move * (max_dist_move / l_move)
+        return center
 
     center.center = cp
     return center

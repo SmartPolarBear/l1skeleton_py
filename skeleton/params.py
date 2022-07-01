@@ -93,9 +93,6 @@ def get_term1(center: np.ndarray, points: np.ndarray, h: float, density_weights:
 
     thetas = np.exp(-r2 / ((h / 2) ** 2))
 
-    # Clip to JUST not zero
-    # thetas = np.clip(thetas, 10 ** -323, None)
-
     alphas = thetas / np.sqrt(r2)
     alphas /= density_weights
 
@@ -144,9 +141,11 @@ def get_term2(center: np.ndarray, centers: np.ndarray, h: float):
 
 def get_sigma(center, centers, h):
     t1 = time.perf_counter()
+
     # These are the weights
     r = centers - center
     r2 = np.einsum('ij,ij->i', r, r)
+
     thetas = np.exp((-r2) / ((h / 2) ** 2))
 
     cov = np.einsum('j,jk,jl->kl', thetas, r, r)
@@ -164,10 +163,8 @@ def get_sigma(center, centers, h):
     # argsort always works from low --> to high so taking the negative values will give us high --> low indices
     sorted_indices = np.argsort(-values)
 
-    values_sorted = values[sorted_indices]
+    sigma = np.max(values) / np.sum(values)
     vectors_sorted = vectors[:, sorted_indices]
-
-    sigma = values_sorted[0] / np.sum(values_sorted)
 
     t2 = time.perf_counter()
 

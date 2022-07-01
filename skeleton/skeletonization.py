@@ -39,10 +39,9 @@ def skeletonize(points, n_centers=1000,
     # return skl_centers
 
     h = h0 = skl_centers.get_h0()
-    hd: Final[float] = h0 / 2
-
     print("h0:", h0)
 
+    hd: Final[float] = h0  # / 2
     density_weights = get_density_weights(points, hd)
 
     print("Max iterations: {}, Number points: {}, Number centers: {}".format(max_iterations, len(points),

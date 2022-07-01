@@ -43,7 +43,7 @@ def skeletonize(points, n_centers=1000,
 
     print("h0:", h0)
 
-    density_weights = get_density_weights(points, h0)
+    density_weights = get_density_weights(points, hd)
 
     print("Max iterations: {}, Number points: {}, Number centers: {}".format(max_iterations, len(points),
                                                                              len(skl_centers.centers)))

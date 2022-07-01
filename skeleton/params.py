@@ -96,9 +96,7 @@ def get_term1(center: np.ndarray, points: np.ndarray, h: float, density_weights:
     # Clip to JUST not zero
     # thetas = np.clip(thetas, 10 ** -323, None)
 
-    r_norm = np.sqrt(r2)
-
-    alphas = thetas / r_norm
+    alphas = thetas / np.sqrt(r2)
     alphas /= density_weights
 
     denom = np.einsum('i->', alphas)
@@ -151,17 +149,7 @@ def get_sigma(center, centers, h):
     r2 = np.einsum('ij,ij->i', r, r)
     thetas = np.exp((-r2) / ((h / 2) ** 2))
 
-    # thetas = get_thetas(r,h)
-    # Thetas are further clipped to a minimum value to prevent infinite covariance
-    # weights = np.clip(thetas, 10**-10, None)
-    # substract mean then calculate variance\
     cov = np.einsum('j,jk,jl->kl', thetas, r, r)
-    # cov = np.zeros((3,3))
-    # for index in range(len(r)):
-    #     cov += weights[index]*np.outer(r[index],r[index])
-    # centers -= np.mean(centers, axis = 0)
-    # # print(centers)
-    # cov = np.cov(centers.T, aweights=weights)
 
     # Get eigenvalues and eigenvectors
     values, vectors = np.linalg.eig(cov)

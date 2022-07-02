@@ -107,7 +107,8 @@ class Centers:
 
             center.set_closest_neighbours(closest[1:in_neighboorhood])
 
-    def __init__(self, points, center_count=2000):
+    def __init__(self, points, center_count=2000, smoothing_k=5):
+        self.smoothing_k = smoothing_k
         self.points = points
 
         self.pcd = o3d.geometry.PointCloud()
@@ -456,8 +457,10 @@ class Centers:
 
             # Get the closest 50 centers to do calculations with
             centers_indices = myCenter.closest_neighbours
-            # Get the density weight of these centers
+
+            # local centers and local sigmas for sigma smoothing
             centers_in = np.array(self.centers[centers_indices])
+            sigmas_in = np.array([self.myCenters[i].sigma for i in centers_indices])
 
             my_local_indices = local_indices[myCenter.index]
             local_points = self.points[my_local_indices]
@@ -475,7 +478,7 @@ class Centers:
                 term2 = get_term2(myCenter.center, centers_in, h)
 
                 if term1.any() and term2.any():
-                    sigma, vecs = get_sigma(myCenter.center, centers_in, h)
+                    sigma, vecs = get_sigma(myCenter.center, centers_in, sigmas_in, h, k=self.smoothing_k)
                     # sigma = np.clip(sigma, 0 ,1.)
 
                     # DIFFERS FROM PAPER
@@ -567,8 +570,8 @@ class Centers:
             connection_vector_u = unit_vector(connection_vector)
 
             cos_theta = np.dot(branch_2_bridge_u, connection_vector_u)
-            # cos_theta >0 --> theta < 100 degrees
-            if cos_theta >= 0:
+            # cos_theta >0 --> theta < 90 degrees
+            if cos_theta > 0:
                 bridge_point = neighbour.index
                 success = True
                 break

@@ -95,7 +95,7 @@ def get_term2(center: np.ndarray, centers: np.ndarray, h: float):
     return term2
 
 
-def get_sigma(center, centers, h):
+def get_sigma(center, centers, local_sigmas, h, k=5):
     # These are the weights
     r = centers - center
     r2 = np.einsum('ij,ij->i', r, r)
@@ -122,6 +122,11 @@ def get_sigma(center, centers, h):
     sorted_indices = np.argsort(-values)
 
     sigma = np.max(values) / np.sum(values)
+
+    knn = np.argsort(r2)
+    knn_sigmas = np.sum(local_sigmas[knn[:(k - 1)]])
+    sigma = (sigma + knn_sigmas) / k  # smoothing sigma
+
     vectors_sorted = vectors[:, sorted_indices]
 
     return sigma, vectors_sorted

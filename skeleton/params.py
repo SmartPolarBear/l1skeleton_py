@@ -51,7 +51,7 @@ def get_term1(center: np.ndarray, points: np.ndarray, h: float, density_weights:
     thetas = np.exp(-r2 / ((h / 2) ** 2))
 
     r2[r2 <= SMALL_THRESHOLD] = 1
-    alphas = thetas / np.sqrt(r2)
+    alphas = thetas  # / np.sqrt(r2)
     alphas /= density_weights
 
     denom = np.einsum('i->', alphas)
@@ -82,7 +82,7 @@ def get_term2(center: np.ndarray, centers: np.ndarray, h: float):
 
     thetas = np.exp((-r2) / ((h / 2) ** 2))
 
-    betas = thetas / r2
+    betas = thetas / np.sqrt(r2)
 
     denom = np.einsum('i->', betas)
 
@@ -123,10 +123,14 @@ def get_sigma(center, centers, local_sigmas, h, k=5):
 
     sigma = np.max(values) / np.sum(values)
 
-    knn = np.argsort(r2)
-    knn_sigmas = np.sum(local_sigmas[knn[:(k - 1)]])
-    sigma = (sigma + knn_sigmas) / k  # smoothing sigma
+    if k > 0:
+        knn = np.argsort(r2)
+        knn_sigmas = np.sum(local_sigmas[knn[1:k]])
+        sigma = (sigma + knn_sigmas) / k  # smoothing sigma
 
     vectors_sorted = vectors[:, sorted_indices]
+
+    if not np.isfinite(sigma):
+        sigma = 0.9
 
     return sigma, vectors_sorted

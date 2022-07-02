@@ -16,7 +16,7 @@ from typing import Iterable, Final
 
 
 class Center:
-    def __init__(self, center, h, index):
+    def __init__(self, center, h, index, sigma=0.5):
         self.center = center
         self.h = h
         self.label = CenterType.NON_BRANCH
@@ -27,7 +27,7 @@ class Center:
         self.head_tail = False
         self.branch_number = None
         self.eigen_vectors = np.zeros((3, 3))
-        self.sigma = 0.5
+        self.sigma = sigma
 
     def set_non_branch(self):
         if self.label != CenterType.BRANCH and self.label != CenterType.REMOVED:
@@ -145,6 +145,24 @@ class Centers:
         self.too_close_threshold = 0.01
         self.allowed_branch_length = 5
 
+        self._initialize_sigmas()
+
+    def _initialize_sigmas(self):
+        for idx, myCenter in enumerate(self.myCenters):
+            # Get the closest 50 centers to do calculations with
+            centers_indices = myCenter.closest_neighbours
+
+            # local centers and local sigmas for sigma smoothing
+            centers_in = np.array(self.centers[centers_indices])
+            sigmas_in = np.array([self.myCenters[i].sigma for i in centers_indices])
+
+            sigma, vecs = get_sigma(myCenter.center, centers_in, sigmas_in, self.h, k=-1)
+
+            myCenter.set_eigen_vectors(vecs)
+            myCenter.set_sigma(sigma)
+
+        print("Set initial sigmas.")
+
     def _compute_h0(self):
 
         bbox = self.pcd.get_oriented_bounding_box(robust=False)
@@ -159,7 +177,7 @@ class Centers:
         print("Bounding box:", points)
         dists = distance.squareform(distance.pdist(points))
         diag = np.max(dists)
-        return (2.0 * diag) / (len(self.pcd.points) ** (1.0 / 3.0))
+        return 0.8 * (2.0 * diag) / (len(self.points) ** (1.0 / 3.0))
 
     def _sample_centers(self, count):
         assert self.h0
@@ -441,6 +459,9 @@ class Centers:
         self.h = h
 
         error_center = 0
+
+        too_small_sigma = 0;
+
         N = 0
 
         # local_indices = get_local_points(self.kdt, centers=self.centers, h=h)
@@ -474,11 +495,11 @@ class Centers:
                 density_weights_points = density_weights[my_local_indices]
 
                 term1 = get_term1(myCenter.center, local_points, h, density_weights_points)
-
                 term2 = get_term2(myCenter.center, centers_in, h)
 
                 if term1.any() and term2.any():
                     sigma, vecs = get_sigma(myCenter.center, centers_in, sigmas_in, h, k=self.smoothing_k)
+
                     # sigma = np.clip(sigma, 0 ,1.)
 
                     # DIFFERS FROM PAPER

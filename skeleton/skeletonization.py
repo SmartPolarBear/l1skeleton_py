@@ -19,6 +19,7 @@ def skeletonize(points, n_centers=1000,
                 max_points=10000,
                 max_iterations=50,
                 dh=2.0,
+                sigma_smoothing_k=5,
                 error_tolerance=1e-5,
                 downsampling_rate=0.5,
                 try_make_skeleton=True,
@@ -33,7 +34,7 @@ def skeletonize(points, n_centers=1000,
     # random.seed(int(time.time()))
     random.seed(3074)
 
-    skl_centers = sct.Centers(points=points, center_count=n_centers)
+    skl_centers = sct.Centers(points=points, center_count=n_centers, smoothing_k=sigma_smoothing_k)
 
     # for i in range(len(skl_centers.myCenters)):
     #     skl_centers.myCenters[i].set_label(CenterType.BRANCH)

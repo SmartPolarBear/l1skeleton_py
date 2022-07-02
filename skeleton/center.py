@@ -470,12 +470,12 @@ class Centers:
 
                 density_weights_points = density_weights[my_local_indices]
 
-                term1, delta_t1 = get_term1(myCenter.center, local_points, h, density_weights_points)
+                term1 = get_term1(myCenter.center, local_points, h, density_weights_points)
 
-                term2, delta_t2 = get_term2(myCenter.center, centers_in, h)
+                term2 = get_term2(myCenter.center, centers_in, h)
 
                 if term1.any() and term2.any():
-                    sigma, vecs, delta_ts = get_sigma(myCenter.center, centers_in, h)
+                    sigma, vecs = get_sigma(myCenter.center, centers_in, h)
                     # sigma = np.clip(sigma, 0 ,1.)
 
                     # DIFFERS FROM PAPER

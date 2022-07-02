@@ -45,8 +45,6 @@ def get_term1(center: np.ndarray, points: np.ndarray, h: float, density_weights:
     :return: term1 of the equation as float
     """
 
-    t1_t = time.perf_counter()
-
     r = points - center
     r2 = np.einsum('ij,ij->i', r, r)
 
@@ -63,10 +61,7 @@ def get_term1(center: np.ndarray, points: np.ndarray, h: float, density_weights:
     else:
         term1 = np.array(False)
 
-    t2_t = time.perf_counter()
-    tt = round(t2_t - t1_t, 5)
-
-    return term1, tt
+    return term1
 
 
 def get_term2(center: np.ndarray, centers: np.ndarray, h: float):
@@ -76,8 +71,6 @@ def get_term2(center: np.ndarray, centers: np.ndarray, h: float):
     :param h:  size of local neighborhood, float
     :return:  term2 of the equation as float
     """
-
-    t1 = time.perf_counter()
 
     x = center - centers
 
@@ -99,14 +92,10 @@ def get_term2(center: np.ndarray, centers: np.ndarray, h: float):
     else:
         term2 = np.array(False)
 
-    t2 = time.perf_counter()
-    tt = round(t2 - t1, 4)
-    return term2, tt
+    return term2
 
 
 def get_sigma(center, centers, h):
-    t1 = time.perf_counter()
-
     # These are the weights
     r = centers - center
     r2 = np.einsum('ij,ij->i', r, r)
@@ -135,6 +124,4 @@ def get_sigma(center, centers, h):
     sigma = np.max(values) / np.sum(values)
     vectors_sorted = vectors[:, sorted_indices]
 
-    t2 = time.perf_counter()
-
-    return sigma, vectors_sorted, t2 - t1
+    return sigma, vectors_sorted

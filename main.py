@@ -35,4 +35,5 @@ if __name__ == "__main__":
     skeleton.colors = o3d.utility.Vector3dVector([[0.9, 0.0, 0.0] for p in cts])
 
     # o3d.visualization.draw_geometries([original, all_centers, skeleton], point_show_normal=True)
-    o3d.visualization.draw_geometries([original, skeleton])
+    # o3d.visualization.draw_geometries([original, skeleton])
+    o3d.visualization.draw_geometries([original, all_centers])

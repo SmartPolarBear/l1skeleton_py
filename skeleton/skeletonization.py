@@ -53,13 +53,8 @@ def skeletonize(points, n_centers=1000,
     for i in range(max_iterations):
         bridge_points = len([1 for c in skl_centers.myCenters if c.label == CenterType.BRIDGE])
         non_branch_points = len([1 for c in skl_centers.myCenters if c.label == CenterType.NON_BRANCH])
-        # for center in skl_centers.myCenters:
-        #     if center.label == CenterType.BRIDGE:
-        #         bridge_points += 1
-        #     if center.label == CenterType.NON_BRANCH:
-        #         non_branch_points += 1
 
-        sys.stdout.write("\n\nIteration:{}, h:{}, bridge_points:{}\n\n".format(i, round(h, 3), bridge_points))
+        print("\n\nIteration:{}, h:{}, bridge_points:{}\n\n".format(i, round(h, 3), bridge_points))
 
         last_error = 0
         for j in range(50):  # magic number. do contracting at most 30 times
@@ -93,7 +88,7 @@ def skeletonize(points, n_centers=1000,
 
         h = h + h0 / dh
 
-    with SkeletonBeforeAfterVisualizer(skl_centers, enable=True):
+    with SkeletonBeforeAfterVisualizer(skl_centers, enable=False):
         if recenter_knn > 0:
             skl_centers.recenter(downsampling_rate=downsampling_rate, knn=recenter_knn)
 

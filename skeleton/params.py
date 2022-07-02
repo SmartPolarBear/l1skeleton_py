@@ -1,49 +1,9 @@
 import numpy as np
 import time
 
-EXTREME_SMALL = 10 ** -323
-VERY_SMALL = 10 ** -10
+from typing import Final
 
-
-def get_thetas(r, h):
-    """
-    :param r: variable r
-    :param h: local neighborhood size
-    :return: theta(r)
-    """
-    thetas = np.exp((-r ** 2) / ((h / 2) ** 2))
-    # Clip to JUST not zero
-    thetas = np.clip(thetas, EXTREME_SMALL, None)
-    return thetas
-
-
-def get_alphas(x: np.ndarray, points: np.ndarray, h: float):
-    """
-    :param x:  1x3 center we of interest, np.ndarray
-    :param points:  Nx3 array of all the points, np.ndarray
-    :param h: size of local neighborhood, float
-    :return: alpha(i,j)
-    """
-    r = np.linalg.norm(x - points, axis=1) + VERY_SMALL
-    theta = get_thetas(r, h)
-
-    alphas = theta / r
-    return alphas
-
-
-def get_betas(x, points, h):
-    """
-    :param x:  1x3 center we of interest, np.ndarray
-    :param points:  Nx3 array of all the points, np.ndarray
-    :param h: size of local neighborhood, float
-    :return: beta(i,i')
-    """
-    r = np.linalg.norm(x - points, axis=1) + VERY_SMALL
-    theta = get_thetas(r, h)
-
-    betas = theta / r ** 2
-
-    return np.array(betas)
+SMALL_THRESHOLD: Final[float] = 1e-20
 
 
 def get_density_weights(points, hd, for_center=False, center=None):
@@ -65,13 +25,12 @@ def get_density_weights(points, hd, for_center=False, center=None):
         r2 = np.einsum('ij,ij->i', r, r)
         density_weights = 1 + np.einsum('i->', np.exp((-r2) / ((hd / 2) ** 2)))
     else:
-
         for point in points:
             r = point - points
             r2 = np.einsum('ij,ij->i', r, r)
-            # This calculation includes the point itself thus one entry will be zero resulting in the needed + 1 in
-            # formula dj = 1+ sum(theta(p_i - p_j))
-            density_weight = 1 + np.einsum('i->', np.exp((-r2) / ((hd / 2) ** 2)))
+            r2 = r2[r2 > SMALL_THRESHOLD]
+
+            density_weight = 1 + np.einsum('i->', np.exp((-r2) / ((hd / 2.0) ** 2)))
             density_weights.append(density_weight)
 
     return np.array(density_weights)
@@ -93,11 +52,12 @@ def get_term1(center: np.ndarray, points: np.ndarray, h: float, density_weights:
 
     thetas = np.exp(-r2 / ((h / 2) ** 2))
 
+    r2[r2 <= SMALL_THRESHOLD] = 1
     alphas = thetas / np.sqrt(r2)
     alphas /= density_weights
 
     denom = np.einsum('i->', alphas)
-    if denom > 10 ** -20:
+    if denom > SMALL_THRESHOLD:
         # term1 = np.sum((points.T*alphas).T, axis = 0)/denom
         term1 = np.einsum('j,jk->k', alphas, points) / denom
     else:
@@ -120,7 +80,12 @@ def get_term2(center: np.ndarray, centers: np.ndarray, h: float):
     t1 = time.perf_counter()
 
     x = center - centers
+
     r2 = np.einsum('ij,ij->i', x, x)
+
+    indexes = r2 > SMALL_THRESHOLD
+    r2 = r2[indexes]
+    x = x[indexes]
 
     thetas = np.exp((-r2) / ((h / 2) ** 2))
 
@@ -128,7 +93,7 @@ def get_term2(center: np.ndarray, centers: np.ndarray, h: float):
 
     denom = np.einsum('i->', betas)
 
-    if denom > 10 ** -20:
+    if denom > SMALL_THRESHOLD:
         num = np.einsum('j,jk->k', betas, x)
         term2 = num / denom
     else:
@@ -145,6 +110,10 @@ def get_sigma(center, centers, h):
     # These are the weights
     r = centers - center
     r2 = np.einsum('ij,ij->i', r, r)
+
+    indexes = r2 > SMALL_THRESHOLD
+    r = r[indexes]
+    r2 = r2[indexes]
 
     thetas = np.exp((-r2) / ((h / 2) ** 2))
 

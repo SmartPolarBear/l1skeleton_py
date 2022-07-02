@@ -30,7 +30,8 @@ def skeletonize(points, n_centers=1000,
         random_indices = random.sample(range(0, len(points)), max_points)
         points = points[random_indices, :]
 
-    random.seed(int(time.time()))
+    # random.seed(int(time.time()))
+    random.seed(3074)
 
     skl_centers = sct.Centers(points=points, center_count=n_centers)
 
@@ -41,7 +42,7 @@ def skeletonize(points, n_centers=1000,
     h = h0 = skl_centers.get_h0()
     print("h0:", h0)
 
-    hd: Final[float] = h0  # / 2
+    hd: Final[float] = h0 / 2
     density_weights = get_density_weights(points, hd)
 
     print("Max iterations: {}, Number points: {}, Number centers: {}".format(max_iterations, len(points),
@@ -50,29 +51,25 @@ def skeletonize(points, n_centers=1000,
     last_non_branch = len(skl_centers.centers)
     non_change_iters = 0
     for i in range(max_iterations):
-
-        bridge_points = 0
-        non_branch_points = 0
-        for center in skl_centers.myCenters:
-            if center.label == CenterType.BRIDGE:
-                bridge_points += 1
-            if center.label == CenterType.NON_BRANCH:
-                non_branch_points += 1
+        bridge_points = len([1 for c in skl_centers.myCenters if c.label == CenterType.BRIDGE])
+        non_branch_points = len([1 for c in skl_centers.myCenters if c.label == CenterType.NON_BRANCH])
+        # for center in skl_centers.myCenters:
+        #     if center.label == CenterType.BRIDGE:
+        #         bridge_points += 1
+        #     if center.label == CenterType.NON_BRANCH:
+        #         non_branch_points += 1
 
         sys.stdout.write("\n\nIteration:{}, h:{}, bridge_points:{}\n\n".format(i, round(h, 3), bridge_points))
 
         last_error = 0
-        with SkeletonBeforeAfterVisualizer(skl_centers, enable=False):
-            for j in range(50):  # magic number. do contracting at most 30 times
-                # local_indices = get_local_points(points, skl_centers.centers, h)
-                # error = skl_centers.contract(points, local_indices, h, density_weights)
-                error = skl_centers.contract(h, density_weights)
-                skl_centers.update_properties()
+        for j in range(50):  # magic number. do contracting at most 30 times
+            error = skl_centers.contract(h, density_weights)
+            skl_centers.update_properties()
 
-                if np.abs(error - last_error) < error_tolerance:
-                    break
+            if np.abs(error - last_error) < error_tolerance:
+                break
 
-                last_error = error
+            last_error = error
 
         if try_make_skeleton:
             skl_centers.find_connections()

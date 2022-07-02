@@ -146,7 +146,7 @@ class Centers:
 
     def _compute_h0(self):
 
-        bbox = self.pcd.get_oriented_bounding_box(robust=True)
+        bbox = self.pcd.get_oriented_bounding_box(robust=False)
 
         # bbox_pcd = o3d.geometry.PointCloud()
         # bbox_pcd.points = o3d.utility.Vector3dVector(

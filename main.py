@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # points = np.asarray(pcd.points)
 
     # mimosa: dh=8
-    myCenters = skeletonize(points, n_centers=1000, downsampling_rate=1, dh=4.0, recenter_knn=-1)
+    myCenters = skeletonize(points, n_centers=1000, downsampling_rate=1, dh=2.0, recenter_knn=-1)
 
     if len(points) > 5000:
         random_indices = random.sample(range(0, len(points)), 5000)

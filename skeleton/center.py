@@ -520,6 +520,9 @@ class Centers:
                     myCenter.set_sigma(sigma)
                     myCenter.set_h(h)
 
+        if N == 0:
+            return 0
+
         return error_center / N
 
     def bridge_2_branch(self, bridge_point, requesting_branch_number):

@@ -5,7 +5,35 @@ from skeleton.center_type import CenterType
 
 from skimage.measure import EllipseModel
 
+from skeleton.fit.ellipse import fit_ellipse
+
 import open3d as o3d
+
+
+def ellipse_center_skimage(projected):
+    xy = projected[:, [0, 1]]
+
+    ell = EllipseModel()
+    if not ell.estimate(xy):
+        return False, None
+
+    xc, yc, _, _, _ = ell.params
+    return True, np.array([xc, yc])
+
+
+def ellipse_center_svd(projected):
+    x = projected[:, 0]
+    y = projected[:, 1]
+
+    _, _, xc, yc, _ = fit_ellipse(x, y)
+    return True, np.array([xc, yc])
+
+
+def ellipse_center(projected, algorithm='svd'):
+    if algorithm == 'svd':
+        return ellipse_center_svd(projected)
+    else:
+        return ellipse_center_skimage(projected)
 
 
 def ellipse_center(projected):

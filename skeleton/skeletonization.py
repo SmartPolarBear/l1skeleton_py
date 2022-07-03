@@ -90,7 +90,7 @@ def skeletonize(points, n_centers=1000,
 
         h = h + h0 / dh
 
-    with SkeletonBeforeAfterVisualizer(skl_centers, enable=False):
+    with SkeletonBeforeAfterVisualizer(skl_centers, enable=True):
         if recenter_knn > 0:
             skl_centers.recenter(downsampling_rate=downsampling_rate, knn=recenter_knn)
 

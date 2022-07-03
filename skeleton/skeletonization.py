@@ -16,18 +16,19 @@ from typing import Final
 
 
 def skeletonize(points, n_centers=1000,
-                max_points=10000,
                 max_iterations=50,
                 dh=2.0,
                 sigma_smoothing_k=5,
                 error_tolerance=1e-5,
                 downsampling_rate=0.5,
                 try_make_skeleton=True,
-                recenter_knn=200):
+                recenter_knn=200,
+                max_points=None):
     assert len(points) > n_centers
     assert len(points) > recenter_knn
 
-    if len(points) > max_points:
+    if max_points is not None and len(points) > max_points:
+        print("Down sampling the original point cloud")
         random_indices = random.sample(range(0, len(points)), max_points)
         points = points[random_indices, :]
 

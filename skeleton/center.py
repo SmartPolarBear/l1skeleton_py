@@ -177,7 +177,7 @@ class Centers:
         print("Bounding box:", points)
         dists = distance.squareform(distance.pdist(points))
         diag = np.max(dists)
-        return 0.8 * (2.0 * diag) / (len(self.points) ** (1.0 / 3.0))
+        return (2.0 * diag) / (len(self.points) ** (1.0 / 3.0))
 
     def _sample_centers(self, count):
         assert self.h0

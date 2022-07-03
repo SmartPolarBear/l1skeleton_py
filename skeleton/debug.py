@@ -14,6 +14,8 @@ from skeleton.utils import get_local_points
 import open3d as o3d
 from tqdm import tqdm
 
+import timeit
+
 
 class SkeletonBeforeAfterVisualizer:
     def __init__(self, skl: sct.Centers, enable=True):
@@ -44,3 +46,20 @@ class SkeletonBeforeAfterVisualizer:
 
         o3d.visualization.draw_geometries([before_pcd, after_pcd])
 
+
+class CodeTimer:
+    def __init__(self, desc=None):
+        self.t_start = 0
+        self.t_end = 0
+        self.desc = desc
+
+    def __enter__(self):
+        self.t_start = timeit.default_timer()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.t_end = timeit.default_timer()
+        desc = self.desc
+        if desc is None:
+            desc = "Time: "
+
+        print(desc, self.t_end - self.t_start)
